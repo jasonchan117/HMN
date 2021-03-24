@@ -74,9 +74,9 @@ if __name__ == '__main__':
             laws = it['meta']['relevant_articles']
             # Find corresponding parent labels
             for i in laws:
-                if parent_dict['id2word'][c_to_p[i]] in parent_class:
+                if parent_dict['id2word'][c_to_p[str(i)]] in parent_class:
                     continue
-                parent_class.append(parent_dict['id2word'][c_to_p[i]])
+                parent_class.append(parent_dict['id2word'][c_to_p[str(i)]])
 
 
             seg_fact = stopword_remover(jieba.lcut(text), stop_words_from_file)
