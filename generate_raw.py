@@ -5,7 +5,7 @@ import _pickle as pickle
 import jsonlines
 import jieba
 from utils.parse_data import *
-import tqdm
+from tqdm import tqdm
 def stopword_remover(line, total_stop_words_set):
 
     tokens = [w for w in line if not (w in total_stop_words_set
