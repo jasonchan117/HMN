@@ -2,7 +2,7 @@
 import os
 import json
 import torch
-import torchtext.data as data
+import torch.utils.data as data
 from torch.autograd import Variable
 from utils import parse_data
 import torchtext.datasets as datasets
@@ -86,7 +86,7 @@ class LawDataSet(data.Dataset):
 
     def __getitem__(self, index):
         #处理一个样本
-        data_path = self.root + self.file_name_list[index]
+        data_path = os.path.join(self.root, self.file_name_list[index])
         text, textlens, label1, label2 = self.loader(data_path)
 
 

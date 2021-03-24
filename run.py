@@ -49,9 +49,10 @@ def main():
     parser.add_argument('--test-data-path', type=str, default=None, help='the test data directory')
     args = parser.parse_args()
 
-
     time_str = datetime.datetime.now().isoformat()
+    os.makedirs('./output/', exist_ok=True)
     sys.stdout = Logger("./output/{}.txt".format(time_str))
+
 
     print("\nLoading data...")
     law_path = "./data/law_dict.pkl"
@@ -80,7 +81,7 @@ def main():
     args.cuda = (not args.no_cuda) and torch.cuda.is_available(); del args.no_cuda
     if args.cuda:
         print("cuda")
-        torch.cuda.set_device(args.gpu)
+        #torch.cuda.set_device(args.gpu)
         model = model.cuda()
 
     print('training start!')
