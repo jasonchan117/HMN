@@ -56,6 +56,7 @@ def train(train_iter, dev_iter, model, args):
         start_test_time = datetime.datetime.now()
         print("==================== epoch:{} ====================".format(epoch))
         for batch in train_iter:
+            # Label1: parent label(One hot), Label2: child label(One hot), law: origin child label index.
             text, text_lens, label1, label2, law = batch
             text, label1, label2= Variable(text),Variable(label1), Variable(label2)
 
@@ -67,33 +68,42 @@ def train(train_iter, dev_iter, model, args):
                 # law_text = law_text.cuda()
                 article_text, article_len = article_text.cuda(), article_len.cuda()
 
-            # we have parent classifier and sub classifier,sperate input by parent class and train
-            parent_index = torch.nonzero(label1)
-            classify = [[] for i in range(8)]
+            # we have parent classifier and sub classifier,separate input by parent class and train
+            # Generate non-zero index
+            parent_index = torch.nonzero(label1) # tensor([ 0, -1,  1,  1, -1,  0,  1, -1, -1, -1]) -> tensor([[1],[2], [3],[4],[6],[7],[8], [9]])
+            classify = [[] for i in range(8)] # [[], [], [], [], [], [], [], []]
             label2_list = []
+            # 2-d list classify recode the case index in one batch that violate corresponding parent label.
             for index in parent_index:
                 classify[index[1]] = classify[index[1]] + [index[0]]
+
             # classify[5]= [i for i in range(len(text))]
             classify = [torch.LongTensor(item) for item in classify]
             for i, item in enumerate(classify):
                 if(len(item)==1):
                     classify[i] =classify[i].repeat(2)
                     item = item.repeat(2)
-                label2_part = label2[item]
+                label2_part = label2[item]  # label2 size:64x183, select those rows
                 if len(label2_part) > 0:
                     label2_part = label2_part[:, parent_size[i][0]: parent_size[i][1]]
-                label2_list.append(label2_part)
+                label2_list.append(label2_part)# label2_list is 8xnxm matrix(8: parent classes, n: how many cases, m:184), each row contains the one-hot of label2
 
             optimizer.zero_grad()
 
             # label_des, all_list= model(label_inputs=article_text, label_inputs_length=article_len,epoch=epoch,step=steps)
+            # The article_text and article_len here are the child label text and len after encoding. Using Dynamic GRU, and the return value label des and all_list are (183,128) and (8 x m x 128)(allocate to parent label)
             label_des, all_list = model(label_inputs=article_text, label_inputs_length=article_len)
-
+            # (183,128), (8, m, 128)
             logits,logits_list= model(inputs=text, inputs_length=text_lens, label_des=label_des,
                            all_list=all_list, classify=classify,flag=0)
+            # logits :: label1
+            # logits_list :: label2
+
             # print(steps)
+            # loss1 is the loss of parent label
             loss1 = torch.nn.functional.binary_cross_entropy_with_logits(logits, label1)
             loss2 = 0
+            # If the the number of cases in each parent label is greater than 0, then compute the child label loss
             if len(label2_list[0]) > 0:
                 loss2 += torch.nn.functional.binary_cross_entropy_with_logits(logits_list[0], label2_list[0])
             if len(label2_list[1]) > 0:
@@ -168,7 +178,7 @@ def eval(dev_iter, model, args,label_des,all_list):
             label1 = label1.cuda()
             text_lens = text_lens.cuda()
 
-        logits,logits2 = model(inputs=text, inputs_length=text_lens, label_des=label_des,all_list=all_list,flag=1,label1=label1)
+        logits, logits2 = model(inputs=text, inputs_length=text_lens, label_des=label_des,all_list=all_list,flag=1,label1=label1)
 
         pre_numpy1 = logits.cpu().data.numpy().astype('int')
         label1_numpy = label1.cpu().data.numpy()

@@ -33,17 +33,15 @@ def is_number(s):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--input', default='../rawdata/final_all_data/first_stage/train.json',
-                        help='The path to the data.')
+                        help='The path to the input data.')
     parser.add_argument('--output', default='data/instances/train',
                         help='The path to output directory.')
-    parser.add_argument('--data_type', default='json',
-                        help='The type of data in [json, txt]')
     parser.add_argument('--relation', default='./data/my_dict.txt')
     parser.add_argument('--stop_words', default='./data/stop_words.txt',
                         help='The path to stop words.')
     parser.add_argument('--word_dict', default='./data/word_dict_10w.pkl')
     parser.add_argument('--id', required= True,
-                        help='The id of instance generated.')
+                        help='The prefix of generate json file.')
     args = parser.parse_args()
 
     os.makedirs(args.output, exist_ok=True)
@@ -65,8 +63,6 @@ if __name__ == '__main__':
     # Read json file
     ind = 0
     with open(args.input , 'r') as js:
-
-
         JSON = jsonlines.Reader(js)
         for it in tqdm(JSON):
             parent_class = []
@@ -77,18 +73,14 @@ if __name__ == '__main__':
                 if parent_dict['id2word'][c_to_p[str(i)]] in parent_class:
                     continue
                 parent_class.append(parent_dict['id2word'][c_to_p[str(i)]])
-
-
             seg_fact = stopword_remover(jieba.lcut(text), stop_words_from_file)
             textIds = wordHelper.transform_raw(seg_fact)
             text_len = len(textIds)
-
             instance = {
                 "text_len": text_len,
                 "laws": laws,
                 "textIds": textIds,
                 "parent_class": parent_class
             }
-
             jsondata = json.dump(instance, open(os.path.join(args.output, ''.join([args.id, '_', str(ind), '.json'])), 'a'), ensure_ascii=False)
             ind+=1

@@ -35,6 +35,7 @@ def main():
     parser.add_argument('--train-batch-size', default=60, type=int)
     parser.add_argument('--train-file', default='train-v1.1.json')
     parser.add_argument('--word-dim', default=100, type=int)
+    parser.add_argument('--output', default='./output')
 
     parser.add_argument('-save-best', type=bool, default=True, help='whether to save when get best performance')
     parser.add_argument('-snapshot', type=str, default=None,
@@ -50,8 +51,8 @@ def main():
     args = parser.parse_args()
 
     time_str = datetime.datetime.now().isoformat()
-    os.makedirs('./output/', exist_ok=True)
-    sys.stdout = Logger("./output/{}.txt".format(time_str))
+    os.makedirs(args.output, exist_ok=True)
+    sys.stdout = Logger(os.path.join(args.output, ''.join([time_str, '.txt'])))
 
 
     print("\nLoading data...")

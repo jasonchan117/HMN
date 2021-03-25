@@ -96,4 +96,5 @@ def makelaw():
     return torch.LongTensor(law_text), torch.LongTensor(law_length), law_order, parent2law
 
 if __name__ == "__main__":
-    makelaw()
+    law_text, law_length, law_order, parent2law = makelaw()
+    print(law_text.size(), law_length.size(), law_text, law_length )
