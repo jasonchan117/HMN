@@ -56,19 +56,25 @@ class HMN(nn.Module):
             fact_out = self.RSANModel_Sub(inputs,inputs_length)
             output_feature = self.RSANModel(fact_out,inputs_length,label_repeat_out)
             logits = self.final_fc(output_feature)
-
+            # output_feature: [batchsize 256]
+            #print('--',classify)
             law_list = []
             for i,item in enumerate(classify):
                 if len(item)>0:
+                    # all_list: [54.. 128]
+                    # law_part: (repeat)[number 54.. 128]
                     law_part = all_list[i].unsqueeze(0).repeat(len(item), 1,1)
+                    
                 else:
                     law_part = torch.Tensor([])
+                
                 law_list.append(law_part)
-
+            
 
             evidence = []
             evidence_len = []
             logits_law = [[] for i in range(8)]
+            
             for item in classify:
                 part_evilen = inputs_length[item]
                 evidence_len.append(part_evilen)
@@ -79,19 +85,25 @@ class HMN(nn.Module):
                     evidence.append(part_evi)
                 else:
                     evidence.append(fact_out[item])
-
+            # evidence_len: the length of text in 8 categories
             if len(evidence_len[0])>0 :
-                logits_law[0] = self.coatt1(evidence[0], evidence_len[0], law_list[0])
+                logits_law[0] = self.coatt1(evidence[0], evidence_len[0], law_list[0]) 
+                #logtis_law[0]: [batch 256]
                 logits_law[0] = self.fc1(logits_law[0])
             if len(evidence_len[1])> 0:
                 logits_law[1] = self.coatt2(evidence[1], evidence_len[1], law_list[1])
                 logits_law[1] = self.fc2(logits_law[1])
-            if len(evidence_len[2])> 0:
+            if len(evidence_len[2])> 0: 
                 logits_law[2] = self.coatt3(evidence[2], evidence_len[2], law_list[2])
+                
+                # evidence_len[2].size(), evidence[2].size(), law_list[2].size() : torch.Size([11]) torch.Size([11, 10, 128]) torch.Size([11, 20, 128])
                 logits_law[2] = self.fc3(logits_law[2])
+                
             if len(evidence_len[3])> 0:
                 logits_law[3] = self.coatt4(evidence[3], evidence_len[3], law_list[3])
                 logits_law[3] = self.fc4(logits_law[3])
+                #print(evidence_len[3].size(), evidence[3].size(), law_list[3].size())
+                
             if len(evidence_len[4]) > 0:
                 logits_law[4] = self.coatt5(evidence[4], evidence_len[4], law_list[4])
                 logits_law[4] = self.fc5(logits_law[4])
