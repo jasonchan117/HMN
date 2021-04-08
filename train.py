@@ -58,8 +58,9 @@ def train(train_iter, dev_iter, model, args):
         for batch in train_iter:
             # Label1: parent label(One hot), Label2: child label(One hot), law: origin child label index.
             text, text_lens, label1, label2, law = batch
-            text, label1, label2= Variable(text),Variable(label1), Variable(label2)
 
+            text, label1, label2= Variable(text),Variable(label1), Variable(label2)
+            
             article_text, article_len = Variable(law_text), Variable(law_length)
             if args.cuda:
                 text, label1 = text.cuda(), label1.cuda()
@@ -94,8 +95,10 @@ def train(train_iter, dev_iter, model, args):
             # The article_text and article_len here are the child label text and len after encoding. Using Dynamic GRU, and the return value label des and all_list are (183,128) and (8 x m x 128)(allocate to parent label)
             label_des, all_list = model(label_inputs=article_text, label_inputs_length=article_len)
             # (183,128), (8, m, 128)
+            
             logits,logits_list= model(inputs=text, inputs_length=text_lens, label_des=label_des,
-                           all_list=all_list, classify=classify,flag=0)
+                           all_list=all_list, classify=classify, flag=0)
+
             # logits :: label1
             # logits_list :: label2
 
