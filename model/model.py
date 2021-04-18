@@ -133,7 +133,7 @@ class HMN(nn.Module):
             # Number predict for child label
             child_one_hot = [0] * inputs.size(0)
             for i, par in enumerate(logits_law):
-                if evidence_len[i] > 0:
+                if len(evidence_len[i]) > 0:
                     for k,j in enumerate(classify[i]):
                         if child_one_hot[j] == 0:
                             child_one_hot[j] = self.nl_arr[i](par[k]).repeat(184, 1)
