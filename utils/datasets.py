@@ -113,7 +113,7 @@ class LawDataSet(data.Dataset):
         parent_num_hot = [0.] * 8
         law_num_hot[law_num-1] = 1.
         parent_num_hot[parent_num] = 1.
-        return text, textlens, label1, label2, law, law_num_hot, parent_num_hot
+        return text, textlens, label1, label2, law,  torch.FloatTensor(law_num_hot), torch.FloatTensor(parent_num_hot)
 
     def __len__(self):
         return len(self.file_name_list)
