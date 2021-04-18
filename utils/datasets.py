@@ -109,7 +109,7 @@ class LawDataSet(data.Dataset):
         if self.label2_transform is not None:
             label2 = self.label2_transform(label2)
         # To one-hot
-        law_num_hot = [0.] * 184
+        law_num_hot = [0.] * 12
         parent_num_hot = [0.] * 8
         law_num_hot[law_num-1] = 1.
         parent_num_hot[parent_num] = 1.

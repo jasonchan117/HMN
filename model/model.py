@@ -36,16 +36,14 @@ class HMN(nn.Module):
         self.fc8 = FCLayer(self.lstm_hidden_dim*2 , 7, type="deep")
 
         # NLN
-        # self.nl1 = FCLayer(17, 184, type="normal")
-        # self.nl2 = FCLayer(54, 184, type="normal")
-        # self.nl3 = FCLayer(20, 184, type="normal")
-        # self.nl4 = FCLayer(13, 184, type="normal")
-        # self.nl5 = FCLayer(55, 184, type="normal")
-        # self.nl6 = FCLayer(3, 184, type="normal")
-        # self.nl7 = FCLayer(14, 184, type="normal")
-        # self.nl8 = FCLayer(7, 184, type="normal")
-        self.nl_arr= [FCLayer(17, 184, type="normal"), FCLayer(54, 184, type="normal"), FCLayer(20, 184, type="normal"), FCLayer(13, 184, type="normal"), FCLayer(55, 184, type="normal"),
-                      FCLayer(3, 184, type="normal"), FCLayer(14, 184, type="normal"), FCLayer(7, 184, type="normal")]
+        self.nl1 = FCLayer(17, 184, type="normal")
+        self.nl2 = FCLayer(54, 184, type="normal")
+        self.nl3 = FCLayer(20, 184, type="normal")
+        self.nl4 = FCLayer(13, 184, type="normal")
+        self.nl5 = FCLayer(55, 184, type="normal")
+        self.nl6 = FCLayer(3, 184, type="normal")
+        self.nl7 = FCLayer(14, 184, type="normal")
+        self.nl8 = FCLayer(7, 184, type="normal")
         self.NLN_child = TextCNN(184, 184, 12)
         self.NLN_parent = TextCNN(args.embed_dim, 10, 8)
 
@@ -131,15 +129,27 @@ class HMN(nn.Module):
                 logits_law[7] = self.coatt8(evidence[7], evidence_len[7], law_list[7])
                 logits_law[7] = self.fc8(logits_law[7])
             # Number predict for child label
-            child_one_hot = [0] * inputs.size(0)
+            child_one_hot = torch.zeros([inputs.size(0), 184, 184]).cuda()
             for i, par in enumerate(logits_law):
                 if len(evidence_len[i]) > 0:
                     for k,j in enumerate(classify[i]):
-                        if child_one_hot[j] == 0:
-                            child_one_hot[j] = self.nl_arr[i](par[k]).repeat(184, 1)
-                        else:
-                            child_one_hot[j] = child_one_hot[j] + self.nl_arr[i](par[k]).repeat(184, 1)
-            child_one_hot = torch.FloatTensor(child_one_hot)
+                        if i == 0:
+                            child_one_hot[j] = child_one_hot[j] + self.nl1(par[k]).repeat(184, 1)
+                        if i == 1:
+                            child_one_hot[j] = child_one_hot[j] + self.nl2(par[k]).repeat(184, 1)
+                        if i == 2:
+                            child_one_hot[j] = child_one_hot[j] + self.nl3(par[k]).repeat(184, 1)
+                        if i == 3:
+                            child_one_hot[j] = child_one_hot[j] + self.nl4(par[k]).repeat(184, 1)
+                        if i == 4:
+                            child_one_hot[j] = child_one_hot[j] + self.nl5(par[k]).repeat(184, 1)
+                        if i == 5:
+                            child_one_hot[j] = child_one_hot[j] + self.nl6(par[k]).repeat(184, 1)
+                        if i == 6:
+                            child_one_hot[j] = child_one_hot[j] + self.nl7(par[k]).repeat(184, 1)
+                        if i == 7:
+                            child_one_hot[j] = child_one_hot[j] + self.nl8(par[k]).repeat(184, 1)
+
             logits_parent_num = self.NLN_parent(fact_out)
             logits_child_num = self.NLN_child(child_one_hot)
             return logits, logits_law, logits_child_num, logits_parent_num
