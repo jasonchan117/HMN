@@ -40,6 +40,8 @@ def my_collate(batch):
     label1 = [item[2] for item in batch]
     label2 = [item[3] for item in batch]
     law = [item[4] for item in batch]
+    law_len = [item[5] for item in batch]
+    parent_len = [item[6] for item in batch]
     text_lens = [len(item[0]) for item in batch]
     max_len = max(text_lens)
 
@@ -51,7 +53,7 @@ def my_collate(batch):
     for i,lenth in enumerate(text_lens):
         if lenth>10:
             text_lens[i]=10
-    return [text, torch.LongTensor(text_lens), torch.FloatTensor(label1)[:,1:9],label2, laws]
+    return [text, torch.LongTensor(text_lens), torch.FloatTensor(label1)[:,1:9],label2, laws, law_len, parent_len]
 
     # print("#"*100)
     # print(text)
@@ -88,8 +90,8 @@ class LawDataSet(data.Dataset):
         #处理一个样本
         data_path = os.path.join(self.root, self.file_name_list[index])
         text, textlens, label1, label2 = self.loader(data_path)
-
-
+        law_num = len(label2)
+        parent_num = len(label1)
         if self.transform is not None:
             text = self.transform(text, length = self.pad_len)
 
@@ -106,8 +108,12 @@ class LawDataSet(data.Dataset):
 
         if self.label2_transform is not None:
             label2 = self.label2_transform(label2)
-
-        return text, textlens, label1, label2, law
+        # To one-hot
+        law_num_hot = [0.] * 184
+        parent_num_hot = [0.] * 8
+        law_num_hot[law_num-1] = 1.
+        parent_num_hot[parent_num] = 1.
+        return text, textlens, label1, label2, law, law_num_hot, parent_num_hot
 
     def __len__(self):
         return len(self.file_name_list)

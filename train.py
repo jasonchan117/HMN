@@ -57,15 +57,16 @@ def train(train_iter, dev_iter, model, args):
         print("==================== epoch:{} ====================".format(epoch))
         for batch in train_iter:
             # Label1: parent label(One hot), Label2: child label(One hot), law: origin child label index.
-            text, text_lens, label1, label2, law = batch
+            text, text_lens, label1, label2, law, law_num, parent_num = batch
 
             text, label1, label2= Variable(text),Variable(label1), Variable(label2)
-            
+            law_num, parent_num = Variable(law_num), Variable(parent_num)
             article_text, article_len = Variable(law_text), Variable(law_length)
             if args.cuda:
                 text, label1 = text.cuda(), label1.cuda()
                 label2 = label2.cuda()
                 text_lens = text_lens.cuda()
+                law_num, parent_num = law_num.cuda(), parent_num.cuda()
                 # law_text = law_text.cuda()
                 article_text, article_len = article_text.cuda(), article_len.cuda()
 
@@ -96,7 +97,7 @@ def train(train_iter, dev_iter, model, args):
             label_des, all_list = model(label_inputs=article_text, label_inputs_length=article_len)
             # (183,128), (8, m, 128)
             
-            logits,logits_list= model(inputs=text, inputs_length=text_lens, label_des=label_des,
+            logits, logits_list, logits_child_num, logits_parent_num = model(inputs=text, inputs_length=text_lens, label_des=label_des,
                            all_list=all_list, classify=classify, flag=0)
 
             # logits :: label1
@@ -124,7 +125,10 @@ def train(train_iter, dev_iter, model, args):
             if len(label2_list[7]) > 0:
                 loss2 += torch.nn.functional.binary_cross_entropy_with_logits(logits_list[7], label2_list[7])
 
-            loss = loss1 + loss2
+            # Loss of label prediction
+            loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num)
+            loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num)
+            loss = loss1 + loss2 + loss_child_num + loss_parent_num
             loss.backward()
             optimizer.step()
 
@@ -173,7 +177,7 @@ def eval(dev_iter, model, args,label_des,all_list):
     for batch in dev_iter:
         batch_num = batch_num + 1
 
-        text, text_lens, label1, label2, law = batch
+        text, text_lens, label1, label2, law, law_num, parent_num = batch
         text, label2 = Variable(text), Variable(label2)
 
         if args.cuda:
