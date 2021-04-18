@@ -41,7 +41,7 @@ from .BasicModule import BasicModule
 
 class TextCNN(nn.Module):
     def __init__(self, word_embedding_dimension, sentence_max_size, label_num):
-        super(textCNN, self).__init__()
+        super(TextCNN, self).__init__()
         Dim = word_embedding_dimension
         Cla = label_num
         Ci = 1
