@@ -53,7 +53,7 @@ def my_collate(batch):
     for i,lenth in enumerate(text_lens):
         if lenth>10:
             text_lens[i]=10
-    return [text, torch.LongTensor(text_lens), torch.FloatTensor(label1)[:,1:9],label2, laws, law_len, parent_len]
+    return [text, torch.LongTensor(text_lens), torch.FloatTensor(label1)[:,1:9],label2, laws, torch.FloatTensor(law_len), torch.FloatTensor(parent_len)]
 
     # print("#"*100)
     # print(text)
@@ -113,7 +113,7 @@ class LawDataSet(data.Dataset):
         parent_num_hot = [0.] * 8
         law_num_hot[law_num-1] = 1.
         parent_num_hot[parent_num] = 1.
-        return text, textlens, label1, label2, law,  torch.FloatTensor(law_num_hot), torch.FloatTensor(parent_num_hot)
+        return text, textlens, label1, label2, law,  law_num_hot, parent_num_hot
 
     def __len__(self):
         return len(self.file_name_list)
