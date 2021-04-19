@@ -51,6 +51,7 @@ def main():
 
     parser.add_argument('--nln', action='store_true', help='Use NLN module or not.')
     parser.add_argument('--num_workers',  default=400, help='The number of workers of dataloader')
+    parser.add_argument('--max_len',  default=10, help='The max len of the text.')
 
     args = parser.parse_args()
 
@@ -67,7 +68,7 @@ def main():
     dev_data_path = args.test_data_path
 
     train_iter, dev_iter, word_num, law_num, parent_num = make_data(train_data_path, dev_data_path,
-                                                          law_path, parent_path, word_path, args.batch_size, args.dev_batch_size, args.num_workers)
+                                                          law_path, parent_path, word_path, args.batch_size, args.dev_batch_size, args.num_workers, args.max_len)
     args.model_name = 'HMN'
     args.save_dir = "accu_snapshot"
     args.embed_num = word_num
