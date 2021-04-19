@@ -7,6 +7,7 @@ from utils.datasets import *
 import Make_Law_Label
 from sklearn.metrics import confusion_matrix
 import datetime
+from tqdm import tqdm
 def cal_precision_recall(parent,y_true, y_pred):
     macro_precision = metrics.precision_score(y_true, y_pred, average='macro')
     macro_recall = metrics.recall_score(y_true, y_pred, average='macro')
@@ -55,7 +56,7 @@ def train(train_iter, dev_iter, model, args):
     for epoch in range(1, args.epoch + 1):
         start_test_time = datetime.datetime.now()
         print("==================== epoch:{} ====================".format(epoch))
-        for batch in train_iter:
+        for batch in tqdm(train_iter):
             # Label1: parent label(One hot), Label2: child label(One hot), law: origin child label index.
             text, text_lens, label1, label2, law, law_num, parent_num = batch
 
@@ -179,7 +180,7 @@ def eval(dev_iter, model, args,label_des,all_list):
     label2_list = []
     start_test_time = datetime.datetime.now()
     print("======================== Evaluation =====================")
-    for batch in dev_iter:
+    for batch in tqdm(dev_iter):
         batch_num = batch_num + 1
 
         text, text_lens, label1, label2, law, law_num, parent_num = batch

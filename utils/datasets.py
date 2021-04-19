@@ -14,7 +14,7 @@ import os
 o_path = os.getcwd() # 返回当前工作目录
 sys.path.append(o_path) # 添加自己指定的搜索路径
 
-def make_data(train_data_path, dev_data_path, law_path, parent_path, word_dict_path, batch_size,dev_batch_size):
+def make_data(train_data_path, dev_data_path, law_path, parent_path, word_dict_path, batch_size,dev_batch_size, num_workers):
 
     words_Helper = data_helper.Vocab(word_dict_path)
     law_Helper = data_helper.OneHotEncoding(law_path)
@@ -28,9 +28,9 @@ def make_data(train_data_path, dev_data_path, law_path, parent_path, word_dict_p
     dev_dataset_helper = LawDataSet(dev_data_path, loader=parse_line_from_file, transform=None,
                                     label1_transform=parent_Helper.transform_raw,label2_transform=law_Helper.transform_raw, flags = 0)
     train_iter = torch.utils.data.DataLoader(train_dataset_helper, batch_size=batch_size,
-                                               shuffle=True, num_workers=8, collate_fn=my_collate)
+                                               shuffle=True, num_workers=num_workers, collate_fn=my_collate)
     dev_iter = torch.utils.data.DataLoader(dev_dataset_helper, batch_size=dev_batch_size,
-                                             shuffle=False, num_workers=8, collate_fn=my_collate)
+                                             shuffle=False, num_workers=num_workers, collate_fn=my_collate)
 
     return train_iter, dev_iter, word_num, law_num, parent_num
 

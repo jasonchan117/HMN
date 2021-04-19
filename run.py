@@ -21,7 +21,7 @@ class Logger(object):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--context-threshold', default=400, type=int)
-    parser.add_argument('-batch_size', type=int, default=64, help='batch size for training [default: 64]')
+    parser.add_argument('--batch_size', type=int, default=64, help='batch size for training [default: 64]')
     parser.add_argument('--dev_batch_size', default=1, type=int)
     parser.add_argument('--dropout', default=0.2, type=float)
     parser.add_argument('--epoch', default=3000, type=int)
@@ -50,6 +50,8 @@ def main():
     parser.add_argument('--test-data-path', type=str, default=None, help='the test data directory')
 
     parser.add_argument('--nln', action='store_true', help='Use NLN module or not.')
+    parser.add_argument('--num_workers',  default=400, help='The number of workers of dataloader')
+
     args = parser.parse_args()
 
     time_str = datetime.datetime.now().isoformat()
@@ -65,7 +67,7 @@ def main():
     dev_data_path = args.test_data_path
 
     train_iter, dev_iter, word_num, law_num, parent_num = make_data(train_data_path, dev_data_path,
-                                                          law_path, parent_path, word_path, args.batch_size, args.dev_batch_size)
+                                                          law_path, parent_path, word_path, args.batch_size, args.dev_batch_size, args.num_workers)
     args.model_name = 'HMN'
     args.save_dir = "accu_snapshot"
     args.embed_num = word_num
