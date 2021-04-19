@@ -15,7 +15,7 @@ o_path = os.getcwd() # 返回当前工作目录
 sys.path.append(o_path) # 添加自己指定的搜索路径
 def make_data(train_data_path, dev_data_path, law_path, parent_path, word_dict_path, batch_size,dev_batch_size, num_workers, max_len):
     global MAX_LEN
-    MAX_LEN= max_len
+    MAX_LEN= int(max_len)
     words_Helper = data_helper.Vocab(word_dict_path)
     law_Helper = data_helper.OneHotEncoding(law_path)
     parent_Helper = data_helper.OneHotEncoding(parent_path)
@@ -48,8 +48,8 @@ def my_collate(batch):
     label2 = torch.FloatTensor(label2)
     laws = torch.nonzero(label2)[:,1]
     text = [item + [0] * (max_len - len(item)) for item in text]
-
-    text = torch.LongTensor(text)[:,:max_len]
+    text = [item[0:max_len] for item in text]
+    text = torch.LongTensor(text)
     for i,lenth in enumerate(text_lens):
         text_lens[i]=max_len
     return [text, torch.LongTensor(text_lens), torch.FloatTensor(label1)[:,1:9],label2, laws, torch.FloatTensor(law_len), torch.FloatTensor(parent_len)]
