@@ -48,6 +48,8 @@ def main():
 
     parser.add_argument('--train-data-path', type=str, default=None, help='the train data directory')
     parser.add_argument('--test-data-path', type=str, default=None, help='the test data directory')
+
+    parser.add_argument('--nln', action='store_true', help='Use NLN module or not.')
     args = parser.parse_args()
 
     time_str = datetime.datetime.now().isoformat()

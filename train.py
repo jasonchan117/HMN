@@ -96,10 +96,12 @@ def train(train_iter, dev_iter, model, args):
             # The article_text and article_len here are the child label text and len after encoding. Using Dynamic GRU, and the return value label des and all_list are (183,128) and (8 x m x 128)(allocate to parent label)
             label_des, all_list = model(label_inputs=article_text, label_inputs_length=article_len)
             # (183,128), (8, m, 128)
-            
-            logits, logits_list, logits_child_num, logits_parent_num = model(inputs=text, inputs_length=text_lens, label_des=label_des,
-                           all_list=all_list, classify=classify, flag=0)
-
+            if args.nln == True:
+                logits, logits_list, logits_child_num, logits_parent_num = model(inputs=text, inputs_length=text_lens, label_des=label_des,
+                               all_list=all_list, classify=classify, flag=0)
+            else:
+                logits, logits_list = model(inputs=text, inputs_length=text_lens, label_des=label_des,
+                               all_list=all_list, classify=classify, flag=0)
             # logits :: label1
             # logits_list :: label2
 
@@ -126,9 +128,12 @@ def train(train_iter, dev_iter, model, args):
                 loss2 += torch.nn.functional.binary_cross_entropy_with_logits(logits_list[7], label2_list[7])
 
             # Loss of label prediction
-            loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num)
-            loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num)
-            loss = loss1 + loss2 + loss_child_num + loss_parent_num
+            if args.nln == True:
+                loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num)
+                loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num)
+                loss = loss1 + loss2 + loss_child_num + loss_parent_num
+            else:
+                loss = loss1 + loss2
             loss.backward()
             optimizer.step()
 
@@ -154,7 +159,7 @@ def train(train_iter, dev_iter, model, args):
             # if steps % args.save_interval == 0:
             #     save(model, args.save_dir, args.save_dir.split("/")[0], steps)
         end_test_time = datetime.datetime.now()
-        print("Train : epoch {}, time cost {}".format(epoch + 1, end_test_time - start_test_time))
+        print("Train : epoch {}, time cost {}".format(epoch , end_test_time - start_test_time))
         print("Train : sum loss {}, average loss {}".format(sum_loss, sum_loss / (steps)))
         sum_loss = 0
         steps = 0
