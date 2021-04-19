@@ -53,6 +53,7 @@ def train(train_iter, dev_iter, model, args):
     best_f1_score = 0.0
     sum_loss = 0
     model.train()
+    best_f1 = -1
     for epoch in range(1, args.epoch + 1):
         start_test_time = datetime.datetime.now()
         print("==================== epoch:{} ====================".format(epoch))
@@ -164,7 +165,10 @@ def train(train_iter, dev_iter, model, args):
         print("Train : sum loss {}, average loss {}".format(sum_loss, sum_loss / (steps)))
         sum_loss = 0
         steps = 0
-        eval(dev_iter, model, args,label_des, all_list)
+        f1 = eval(dev_iter, model, args,label_des, all_list )
+        if f1 > best_f1 :
+            best_f1 = f1
+            torch.save(model.state_dict(), os.path.join(args.ckpt, ''.join([args.id, '_', str(epoch), '.pt'])))
         if (epoch) % 5 == 0:
             adjust_learning_rate(optimizer)
             print("lr dec 5")
@@ -244,7 +248,7 @@ def eval(dev_iter, model, args,label_des,all_list):
     print("TestS : jaccard is {} ".format(sjaccard))
     model.train()
     # print("average loss is {}, average f1 is {}".format(avg_loss, avg_f1))
-    return avg_loss, avg_f1
+    return sma_f1
 def save(model, save_dir, save_prefix, steps):
     if not os.path.isdir(save_dir):
         os.makedirs(save_dir)

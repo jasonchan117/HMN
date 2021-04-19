@@ -52,6 +52,8 @@ def main():
     parser.add_argument('--nln', action='store_true', help='Use NLN module or not.')
     parser.add_argument('--num_workers',  default=400, help='The number of workers of dataloader')
     parser.add_argument('--max_len',  default=10, help='The max len of the text.')
+    parser.add_argument('--id', required=True, help='The id for each training.')
+    parser.add_argument('--ckpt', type=str, default='/content/drive/MyDrive/Data/HMN/NLN_20_128', help='The path to save the model.')
 
     args = parser.parse_args()
 
