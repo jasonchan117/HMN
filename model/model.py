@@ -191,7 +191,7 @@ class HMN(nn.Module):
                         output2 = self.coatt1(fact_out, inputs_length, sub)
                         output2 = self.fc1(output2)
                         if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl1(output2).repeat().repeat(183, 1))
+                            output_num = self.NLN_child(self.nl1(output2).repeat().repeat(183, 1).unsqueeze(0))
                             pre, output_num = F.sigmoid(output_num).max(1)
                             output_num+=1
                             sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
@@ -209,7 +209,7 @@ class HMN(nn.Module):
                         output2 = self.coatt2(fact_out, inputs_length, sub)
                         output2 = self.fc2(output2)
                         if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl2(output2).repeat(183, 1))
+                            output_num = self.NLN_child(self.nl2(output2).repeat(183, 1).unsqueeze(0))
                             pre, output_num = F.sigmoid(output_num).max(1)
                             output_num+=1
                             sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
@@ -227,7 +227,7 @@ class HMN(nn.Module):
                         output2 = self.coatt3(fact_out, inputs_length, sub)
                         output2 = self.fc3(output2)
                         if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl3(output2).repeat(183, 1))
+                            output_num = self.NLN_child(self.nl3(output2).repeat(183, 1).unsqueeze(0))
                             pre, output_num = F.sigmoid(output_num).max(1)
                             output_num+=1
                             sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
@@ -245,7 +245,7 @@ class HMN(nn.Module):
                         output2 = self.coatt4(fact_out, inputs_length, sub)
                         output2 = self.fc4(output2)
                         if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl4(output2).repeat(183, 1))
+                            output_num = self.NLN_child(self.nl4(output2).repeat(183, 1).unsqueeze(0))
                             pre, output_num = F.sigmoid(output_num).max(1)
                             output_num+=1
                             sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
@@ -263,7 +263,7 @@ class HMN(nn.Module):
                         output2 = self.coatt5(fact_out, inputs_length, sub)
                         output2 = self.fc5(output2)
                         if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl5(output2).repeat(183, 1))
+                            output_num = self.NLN_child(self.nl5(output2).repeat(183, 1).unsqueeze(0))
                             pre, output_num = F.sigmoid(output_num).max(1)
                             output_num+=1
                             sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
@@ -281,7 +281,7 @@ class HMN(nn.Module):
                         output2 = self.coatt6(fact_out, inputs_length, sub)
                         output2 = self.fc6(output2)
                         if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl6(output2).repeat(183, 1))
+                            output_num = self.NLN_child(self.nl6(output2).repeat(183, 1).unsqueeze(0))
                             pre, output_num = F.sigmoid(output_num).max(1)
                             output_num+=1
                             sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
@@ -299,7 +299,7 @@ class HMN(nn.Module):
                         output2 = self.coatt7(fact_out, inputs_length, sub)
                         output2 = self.fc7(output2)
                         if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl7(output2).repeat(183, 1))
+                            output_num = self.NLN_child(self.nl7(output2).repeat(183, 1).unsqueeze(0))
                             pre, output_num = F.sigmoid(output_num).max(1)
                             output_num+=1
                             sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
@@ -317,7 +317,7 @@ class HMN(nn.Module):
                         output2 = self.coatt8(fact_out, inputs_length, sub)
                         output2 = self.fc8(output2)
                         if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl8(output2).repeat(183, 1))
+                            output_num = self.NLN_child(self.nl8(output2).repeat(183, 1).unsqueeze(0))
                             pre, output_num = F.sigmoid(output_num).max(1)
                             output_num+=1
                             sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
