@@ -37,14 +37,6 @@ class HMN(nn.Module):
 
         # NLN
         if args.nln == True:
-            self.nl1 = FCLayer(17, 183, type="normal")
-            self.nl2 = FCLayer(54, 183, type="normal")
-            self.nl3 = FCLayer(20, 183, type="normal")
-            self.nl4 = FCLayer(13, 183, type="normal")
-            self.nl5 = FCLayer(55, 183, type="normal")
-            self.nl6 = FCLayer(3, 183, type="normal")
-            self.nl7 = FCLayer(14, 183, type="normal")
-            self.nl8 = FCLayer(7, 183, type="normal")
             self.NLN_child = TextCNN(183, 183, 12)
             self.NLN_parent = TextCNN(args.embed_dim, 10, 8)
 
@@ -130,29 +122,15 @@ class HMN(nn.Module):
                 logits_law[7] = self.fc8(logits_law[7])
             # Number predict for child label
             if self.args.nln == True:
-                child_one_hot = torch.zeros([inputs.size(0), 183, 183])
+                parent_size = [[0, 17], [17, 71], [71, 91], [91, 104], [104, 159], [159, 162], [162, 176], [176, 183]]
+                child_one_hot = torch.zeros([inputs.size(0), 183])
                 if self.args.cuda == True:
                     child_one_hot = child_one_hot.cuda()
                 for i, par in enumerate(logits_law):
                     if len(evidence_len[i]) > 0:
                         for k,j in enumerate(classify[i]):
-                            if i == 0:
-                                child_one_hot[j] = child_one_hot[j] + self.nl1(par[k]).repeat(183, 1)
-                            if i == 1:
-                                child_one_hot[j] = child_one_hot[j] + self.nl2(par[k]).repeat(183, 1)
-                            if i == 2:
-                                child_one_hot[j] = child_one_hot[j] + self.nl3(par[k]).repeat(183, 1)
-                            if i == 3:
-                                child_one_hot[j] = child_one_hot[j] + self.nl4(par[k]).repeat(183, 1)
-                            if i == 4:
-                                child_one_hot[j] = child_one_hot[j] + self.nl5(par[k]).repeat(183, 1)
-                            if i == 5:
-                                child_one_hot[j] = child_one_hot[j] + self.nl6(par[k]).repeat(183, 1)
-                            if i == 6:
-                                child_one_hot[j] = child_one_hot[j] + self.nl7(par[k]).repeat(183, 1)
-                            if i == 7:
-                                child_one_hot[j] = child_one_hot[j] + self.nl8(par[k]).repeat(183, 1)
-
+                            child_one_hot[j,parent_size[i][0]:parent_size[i][1]] = par[k]
+                child_one_hot = child_one_hot.unsqueeze(1).repeat(1,183,1)
                 logits_parent_num = F.sigmoid(self.NLN_parent(fact_out))
                 logits_child_num = F.sigmoid(self.NLN_child(child_one_hot))
                 return logits, logits_law, logits_child_num, logits_parent_num
@@ -190,148 +168,74 @@ class HMN(nn.Module):
                     if index == 0:
                         output2 = self.coatt1(fact_out, inputs_length, sub)
                         output2 = self.fc1(output2)
-                        if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl1(output2).repeat().repeat(183, 1).unsqueeze(0))
-                            pre, output_num = F.sigmoid(output_num).max(1)
-                            output_num+=1
-                            sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
-                            for i, cont in enumerate(output2):
-                                if output_num[i] >= output2.size(1):
-                                    output2[i,:] = True
-                                    continue
-                                output2[i, (sort_ind[i, 0:output_num[i]]).long()] = True
-                                output2[i, (sort_ind[i, output_num[i]:output2.size(1)]).long()] = False
-                            logits2 = output2.squeeze()
-                        else:
+                        if self.args.nln != True:
                             logits2 = (F.sigmoid(output2) > 0.5).squeeze()
+                        else:
+                            logits2 = F.sigmoid(output2).squeeze()
                         predict_label[parent_size[index][0]:parent_size[index][1]] = logits2
                     elif index == 1:
                         output2 = self.coatt2(fact_out, inputs_length, sub)
                         output2 = self.fc2(output2)
-                        if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl2(output2).repeat(183, 1).unsqueeze(0))
-                            pre, output_num = F.sigmoid(output_num).max(1)
-                            output_num+=1
-                            sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
-                            for i, cont in enumerate(output2):
-                                if output_num[i] >= output2.size(1):
-                                    output2[i,:] = True
-                                    continue
-                                output2[i, (sort_ind[i, 0:output_num[i]]).long()] = True
-                                output2[i, (sort_ind[i, output_num[i]:output2.size(1)]).long()] = False
-                            logits2 = output2.squeeze()
-                        else:
+                        if self.args.nln != True:
                             logits2 = (F.sigmoid(output2) > 0.5).squeeze()
+                        else:
+                            logits2 = F.sigmoid(output2).squeeze()
                         predict_label[parent_size[index][0]:parent_size[index][1]] = logits2
                     elif index == 2:
                         output2 = self.coatt3(fact_out, inputs_length, sub)
                         output2 = self.fc3(output2)
-                        if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl3(output2).repeat(183, 1).unsqueeze(0))
-                            pre, output_num = F.sigmoid(output_num).max(1)
-                            output_num+=1
-                            sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
-                            for i, cont in enumerate(output2):
-                                if output_num[i] >= output2.size(1):
-                                    output2[i,:] = True
-                                    continue
-                                output2[i, (sort_ind[i, 0:output_num[i]]).long()] = True
-                                output2[i, (sort_ind[i, output_num[i]:output2.size(1)]).long()] = False
-                            logits2 = output2.squeeze()
-                        else:
+                        if self.args.nln != True:
                             logits2 = (F.sigmoid(output2) > 0.5).squeeze()
+                        else:
+                            logits2 = F.sigmoid(output2).squeeze()
                         predict_label[parent_size[index][0]:parent_size[index][1]] = logits2
                     elif index == 3:
                         output2 = self.coatt4(fact_out, inputs_length, sub)
                         output2 = self.fc4(output2)
-                        if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl4(output2).repeat(183, 1).unsqueeze(0))
-                            pre, output_num = F.sigmoid(output_num).max(1)
-                            output_num+=1
-                            sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
-                            for i, cont in enumerate(output2):
-                                if output_num[i] >= output2.size(1):
-                                    output2[i,:] = True
-                                    continue
-                                output2[i, (sort_ind[i, 0:output_num[i]]).long()] = True
-                                output2[i, (sort_ind[i, output_num[i]:output2.size(1)]).long()] = False
-                            logits2 = output2.squeeze()
-                        else:
+                        if self.args.nln != True:
                             logits2 = (F.sigmoid(output2) > 0.5).squeeze()
+                        else:
+                            logits2 = F.sigmoid(output2).squeeze()
                         predict_label[parent_size[index][0]:parent_size[index][1]] = logits2
                     elif index == 4:
                         output2 = self.coatt5(fact_out, inputs_length, sub)
                         output2 = self.fc5(output2)
-                        if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl5(output2).repeat(183, 1).unsqueeze(0))
-                            pre, output_num = F.sigmoid(output_num).max(1)
-                            output_num+=1
-                            sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
-                            for i, cont in enumerate(output2):
-                                if output_num[i] >= output2.size(1):
-                                    output2[i,:] = True
-                                    continue
-                                output2[i, (sort_ind[i, 0:output_num[i]]).long()] = True
-                                output2[i, (sort_ind[i, output_num[i]:output2.size(1)]).long()] = False
-                            logits2 = output2.squeeze()
-                        else:
+                        if self.args.nln != True:
                             logits2 = (F.sigmoid(output2) > 0.5).squeeze()
+                        else:
+                            logits2 = F.sigmoid(output2).squeeze()
                         predict_label[parent_size[index][0]:parent_size[index][1]] = logits2
                     elif index == 5:
                         output2 = self.coatt6(fact_out, inputs_length, sub)
                         output2 = self.fc6(output2)
-                        if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl6(output2).repeat(183, 1).unsqueeze(0))
-                            pre, output_num = F.sigmoid(output_num).max(1)
-                            output_num+=1
-                            sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
-                            for i, cont in enumerate(output2):
-                                if output_num[i] >= output2.size(1):
-                                    output2[i,:] = True
-                                    continue
-                                output2[i, (sort_ind[i, 0:output_num[i]]).long()] = True
-                                output2[i, (sort_ind[i, output_num[i]:output2.size(1)]).long()] = False
-                            logits2 = output2.squeeze()
-                        else:
+                        if self.args.nln != True:
                             logits2 = (F.sigmoid(output2) > 0.5).squeeze()
+                        else:
+                            logits2 = F.sigmoid(output2).squeeze()
                         predict_label[parent_size[index][0]:parent_size[index][1]] = logits2
                     elif index == 6:
                         output2 = self.coatt7(fact_out, inputs_length, sub)
                         output2 = self.fc7(output2)
-                        if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl7(output2).repeat(183, 1).unsqueeze(0))
-                            pre, output_num = F.sigmoid(output_num).max(1)
-                            output_num+=1
-                            sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
-                            for i, cont in enumerate(output2):
-                                if output_num[i] >= output2.size(1):
-                                    output2[i,:] = True
-                                    continue
-                                output2[i, (sort_ind[i, 0:output_num[i]]).long()] = True
-                                output2[i, (sort_ind[i, output_num[i]:output2.size(1)]).long()] = False
-                            logits2 = output2.squeeze()
-                        else:
+                        if self.args.nln != True:
                             logits2 = (F.sigmoid(output2) > 0.5).squeeze()
+                        else:
+                            logits2 = F.sigmoid(output2).squeeze()
                         predict_label[parent_size[index][0]:parent_size[index][1]] = logits2
                     elif index == 7:
                         output2 = self.coatt8(fact_out, inputs_length, sub)
                         output2 = self.fc8(output2)
-                        if self.args.nln == True:
-                            output_num = self.NLN_child(self.nl8(output2).repeat(183, 1).unsqueeze(0))
-                            pre, output_num = F.sigmoid(output_num).max(1)
-                            output_num+=1
-                            sort_list, sort_ind = F.sigmoid(output2).sort(dim=1, descending=True)
-                            for i, cont in enumerate(output2):
-                                if output_num[i] >= output2.size(1):
-                                    output2[i,:] = True
-                                    continue
-                                output2[i, (sort_ind[i, 0:output_num[i]]).long()] = True
-                                output2[i, (sort_ind[i, output_num[i]:output2.size(1)]).long()] = False
-                            logits2 = output2.squeeze()
-                        else:
+                        if self.args.nln != True:
                             logits2 = (F.sigmoid(output2) > 0.5).squeeze()
+                        else:
+                            logits2 = F.sigmoid(output2).squeeze()
                         predict_label[parent_size[index][0]:parent_size[index][1]] = logits2
-
+            if self.args.nln == True:
+                output_num = self.NLN_child(predict_label.unsqueeze(0).unsqueeze(0).float().repeat(1,183,1))
+                pre, output_num = F.sigmoid(output_num).max(1)
+                output_num += 1
+                sort_list, sort_ind = F.sigmoid(predict_label).sort( descending=True)
+                predict_label[(sort_ind[ 0:output_num.squeeze(0)]).long()] = True
+                predict_label[(sort_ind[ output_num.squeeze(0):]).long()] = False
             return output1.unsqueeze(0), predict_label.unsqueeze(0)
 
 class RSANModel_Sub(nn.Module):
