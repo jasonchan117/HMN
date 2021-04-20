@@ -153,8 +153,8 @@ class HMN(nn.Module):
                             if i == 7:
                                 child_one_hot[j] = child_one_hot[j] + self.nl8(par[k]).repeat(183, 1)
 
-                logits_parent_num = self.NLN_parent(fact_out)
-                logits_child_num = self.NLN_child(child_one_hot)
+                logits_parent_num = F.sigmoid(self.NLN_parent(fact_out))
+                logits_child_num = F.sigmoid(self.NLN_child(child_one_hot))
                 return logits, logits_law, logits_child_num, logits_parent_num
             return logits, logits_law
 

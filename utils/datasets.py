@@ -111,7 +111,7 @@ class LawDataSet(data.Dataset):
         law_num_hot = [0.] * 12
         parent_num_hot = [0.] * 8
         law_num_hot[law_num-1] = 1.
-        parent_num_hot[parent_num] = 1.
+        parent_num_hot[parent_num-1] = 1.
         return text, textlens, label1, label2, law,  law_num_hot, parent_num_hot
 
     def __len__(self):
