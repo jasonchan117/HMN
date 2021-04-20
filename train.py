@@ -168,7 +168,7 @@ def train(train_iter, dev_iter, model, args):
         f1 = eval(dev_iter, model, args,label_des, all_list )
         if f1 > best_f1 :
             best_f1 = f1
-            torch.save(model.state_dict(), os.path.join(args.ckpt, ''.join([args.id, '_', str(epoch), '.pt'])))
+            torch.save(model.state_dict(), os.path.join(args.ckpt, ''.join([args.id, '_', str(epoch),'_', str(f1), '.pt'])))
         if (epoch) % 5 == 0:
             adjust_learning_rate(optimizer)
             print("lr dec 5")
