@@ -237,7 +237,16 @@ class HMN(nn.Module):
                 sort_list, sort_ind = F.sigmoid(predict_label).sort( descending=True)
                 predict_label[(sort_ind[ 0:output_num.squeeze(0)]).long()] = True
                 predict_label[(sort_ind[ output_num.squeeze(0):]).long()] = False
-            return output1.unsqueeze(0), predict_label.unsqueeze(0)
+                return output1.unsqueeze(0), predict_label.unsqueeze(0), output_num, parent_num
+            c_num = 0.
+            p_num = 0.
+            for i in output1:
+                if i == True:
+                    p_num += 1
+            for i in predict_label:
+                if i == True:
+                    c_num += 1
+            return output1.unsqueeze(0), predict_label.unsqueeze(0) , c_num, p_num
 
 class RSANModel_Sub(nn.Module):
     def __init__(self, args):
