@@ -54,6 +54,7 @@ def main():
     parser.add_argument('--max_len',  default=10, help='The max len of the text.')
     parser.add_argument('--id', required=True, help='The id for each training.')
     parser.add_argument('--ckpt', type=str, default='/content/drive/MyDrive/Data/HMN/NLN_20_128', help='The path to save the model.')
+    parser.add_argument('--valid_fre', default=1)
 
     args = parser.parse_args()
 

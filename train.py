@@ -1,6 +1,7 @@
 import torch
 from torchvision import transforms
 from sklearn import metrics
+from sklearn.utils.class_weight import compute_class_weight
 import torch.nn.functional as F
 import numpy as np
 from utils.datasets import *
@@ -165,10 +166,11 @@ def train(train_iter, dev_iter, model, args):
         print("Train : sum loss {}, average loss {}".format(sum_loss, sum_loss / (steps)))
         sum_loss = 0
         steps = 0
-        f1 = eval(dev_iter, model, args,label_des, all_list )
-        if f1 > best_f1 :
-            best_f1 = f1
-            torch.save(model.state_dict(), os.path.join(args.ckpt, ''.join([args.id, '_', str(epoch),'_', str(f1), '.pt'])))
+        if epoch % int(args.valid_fre) == 0:
+            f1 = eval(dev_iter, model, args,label_des, all_list )
+            if f1 > best_f1 :
+                best_f1 = f1
+                torch.save(model.state_dict(), os.path.join(args.ckpt, ''.join([args.id, '_', str(epoch),'_', str(f1), '.pt'])))
         if (epoch) % 5 == 0:
             adjust_learning_rate(optimizer)
             print("lr dec 5")
@@ -182,6 +184,10 @@ def eval(dev_iter, model, args,label_des,all_list):
     label1_list = []
     pre_label2_list = []
     label2_list = []
+    c_g = []
+    c_p = []
+    p_g = []
+    p_p = []
     start_test_time = datetime.datetime.now()
     print("======================== Evaluation =====================")
     for batch in tqdm(dev_iter):
@@ -195,7 +201,11 @@ def eval(dev_iter, model, args,label_des,all_list):
             label1 = label1.cuda()
             text_lens = text_lens.cuda()
 
-        logits, logits2 = model(inputs=text, inputs_length=text_lens, label_des=label_des,all_list=all_list,flag=1,label1=label1)
+        logits, logits2, child_num, par_num = model(inputs=text, inputs_length=text_lens, label_des=label_des,all_list=all_list,flag=1,label1=label1)
+        c_g.append(law_num.max(1)[1] + 1)
+        p_g.append(parent_num.max(1)[1] + 1)
+        c_p.append(child_num.cpu())
+        p_p.append(par_num.cpu())
 
         pre_numpy1 = logits.cpu().data.numpy().astype('int')
         label1_numpy = label1.cpu().data.numpy()
@@ -208,8 +218,11 @@ def eval(dev_iter, model, args,label_des,all_list):
 
         pre_label2_list.append(logits_numpy)
         label2_list.append(label_numpy)
-        # if batch_num == 100:
-        #     break
+
+    c_g = np.array(c_g).astype('int')
+    p_g = np.array(p_g).astype('int')
+    c_p = np.array(c_p).astype('int')
+    p_p = np.array(p_p).astype('int')
     pre_label1_list = np.concatenate(pre_label1_list)
     pre_label2_list = np.concatenate(pre_label2_list)
     label1_list = np.concatenate(label1_list)
@@ -218,15 +231,26 @@ def eval(dev_iter, model, args,label_des,all_list):
     pre_sumlist = np.concatenate((pre_label1_list,pre_label2_list),1)
     label_sumlist = np.concatenate((label1_list,label2_list),1)
 
+    (c_p, c_r, c_f1), c_acc, c_jaccard, c_hamming_loss = cal_metric(c_g, c_p)
+    (p_p, p_r, p_f1), p_acc, p_jaccard, p_hamming_loss = cal_metric(p_g, p_p)
+    print("Parent label number : macro precision: {} macro recall: {}  ma f1 {}".format(p_p, p_r, p_f1))
+    print("Parent label number : Acc is {}".format(p_acc))
+    print("Parent label number : hamming is {}".format(p_hamming_loss))
+    print("Parent label number : jaccard is {} ".format(p_jaccard))
+
+    print("Child label number : macro precision: {} macro recall: {}  ma f1 {}".format(c_p, c_r, c_f1))
+    print("Child label number : Acc is {}".format(c_acc))
+    print("Child label number : hamming is {}".format(c_hamming_loss))
+    print("Child label number : jaccard is {} ".format(c_jaccard))
+    print('----------------------')
     parent_size = [[0, 17], [17, 71], [71, 91], [91, 104], [104, 159], [159, 162], [162, 176], [176, 183]]
     for j,item in enumerate(parent_size):
         cal_precision_recall(j+1,label2_list[:,item[0]:item[1]], pre_label2_list[:,item[0]:item[1]])
-
+    print('----------------------')
     (pma_p, pma_r, pma_f1), pacc, pjaccard, phamming_loss = cal_metric(label1_list, pre_label1_list)
     (ma_p, ma_r, ma_f1), acc, jaccard, hamming_loss = cal_metric(label2_list,pre_label2_list)
 
     (sma_p, sma_r, sma_f1), sacc, sjaccard, shamming_loss = cal_metric(label_sumlist, pre_sumlist)
-    print(label_sumlist.shape)
     model.train()
 
     end_test_time = datetime.datetime.now()
