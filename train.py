@@ -42,7 +42,8 @@ def cal_metrics(y_batch, y_predictions, loss):
 def adjust_learning_rate(optimizer, decay_rate=.9):
     for param_group in optimizer.param_groups:
         param_group['lr'] = param_group['lr'] * decay_rate
-
+        a = param_group['lr']
+    print('lr:', a)
 def train(train_iter, dev_iter, model, args):
     if args.cuda:
         model.cuda()
@@ -204,8 +205,12 @@ def eval(dev_iter, model, args,label_des,all_list):
         logits, logits2, child_num, par_num = model(inputs=text, inputs_length=text_lens, label_des=label_des,all_list=all_list,flag=1,label1=label1)
         c_g.append(law_num.max(1)[1] + 1)
         p_g.append(parent_num.max(1)[1] + 1)
-        c_p.append(child_num.cpu())
-        p_p.append(par_num.cpu())
+        if args.nln == True:
+            c_p.append(child_num.cpu())
+            p_p.append(par_num.cpu())
+        else:
+            c_p.append(child_num)
+            p_p.append(par_num)  
 
         pre_numpy1 = logits.cpu().data.numpy().astype('int')
         label1_numpy = label1.cpu().data.numpy()
