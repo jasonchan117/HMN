@@ -1,4 +1,3 @@
-
 import argparse
 import os
 import _pickle as pickle
@@ -32,7 +31,7 @@ def is_number(s):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--input', default='../rawdata/final_all_data/first_stage/train.json',
+    parser.add_argument('--input', default='/Users/jasonchan/PycharmProjects/NLP/rawdata/final_all_data/exercise_contest/data_train.json',
                         help='The path to the input data.')
     parser.add_argument('--output', default='data/instances/train',
                         help='The path to output directory.')
@@ -70,9 +69,9 @@ if __name__ == '__main__':
             laws = it['meta']['relevant_articles']
             # Find corresponding parent labels
             for i in laws:
-                if parent_dict['id2word'][c_to_p[str(i)]] in parent_class:
+                if parent_dict['id2word'][c_to_p[str(i)]-1] in parent_class:
                     continue
-                parent_class.append(parent_dict['id2word'][c_to_p[str(i)]])
+                parent_class.append(parent_dict['id2word'][c_to_p[str(i)]-1])
             seg_fact = stopword_remover(jieba.lcut(text), stop_words_from_file)
             textIds = wordHelper.transform_raw(seg_fact)
             text_len = len(textIds)
