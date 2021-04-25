@@ -47,8 +47,12 @@ def adjust_learning_rate(optimizer, decay_rate=.9):
 def train(train_iter, dev_iter, model, args):
     if args.cuda:
         model.cuda()
-    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
 
+    if args.sep_nln == True and args.nln == True:
+        optimizer_sep = torch.optim.Adam([{'params':[ param for name, param in model.named_parameters() if 'NLN_child' in name or 'NLN_parent' in name or 'trans' in name or 'p_trans' in name]}], lr = args.sep_lr)
+        optimizer = torch.optim.Adam([{'params':[ param for name, param in model.named_parameters() if 'NLN_child' not in name or 'NLN_parent' not in name or 'trans' not in name or 'p_trans' not in name]}], lr = args.learning_rate)
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     parent_size = [[0, 17], [17, 71], [71, 91], [91, 104], [104, 159], [159, 162], [162, 176], [176, 183]]
     law_text, law_length, law_order, parent2law = Make_Law_Label.makelaw()
     steps = 0
@@ -132,14 +136,23 @@ def train(train_iter, dev_iter, model, args):
                 loss2 += torch.nn.functional.binary_cross_entropy_with_logits(logits_list[7], label2_list[7])
 
             # Loss of label prediction
-            if args.nln == True:
+            if args.nln == True and args.sep_nln == True:
+                loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num)
+                loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num)
+                loss_NLN = loss_child_num + loss_parent_num
+                loss_NLN.backward()
+                optimizer_sep.step()
+                loss = loss_NLN
+            elif args.nln == True:
                 loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num)
                 loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num)
                 loss = loss1 + loss2 + loss_child_num + loss_parent_num
+                loss.backward()
+                optimizer.step()
             else:
                 loss = loss1 + loss2
-            loss.backward()
-            optimizer.step()
+                loss.backward()
+                optimizer.step()
 
 
             sum_loss = sum_loss + loss.data
@@ -210,7 +223,7 @@ def eval(dev_iter, model, args,label_des,all_list):
             p_p.append(par_num.cpu())
         else:
             c_p.append(child_num)
-            p_p.append(par_num)  
+            p_p.append(par_num)
 
         pre_numpy1 = logits.cpu().data.numpy().astype('int')
         label1_numpy = label1.cpu().data.numpy()

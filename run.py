@@ -49,13 +49,16 @@ def main():
     parser.add_argument('--train-data-path', type=str, default=None, help='the train data directory')
     parser.add_argument('--test-data-path', type=str, default=None, help='the test data directory')
 
-    parser.add_argument('--nln', action='store_true', help='Use NLN module or not.')
+    parser.add_argument('--nln', action='store_true', help='Use NLN module or not. And train them together.')
     parser.add_argument('--num_workers',  default=400, help='The number of workers of dataloader')
     parser.add_argument('--max_len',  default=10, help='The max len of the text.')
     parser.add_argument('--id', required=True, help='The id for each training.')
     parser.add_argument('--ckpt', type=str, default='/content/drive/MyDrive/Data/HMN/NLN_20_128', help='The path to save the model.')
     parser.add_argument('--valid_fre', default=1)
 
+    parser.add_argument('--sep_nln', action = 'store_true', help='Train the two modules separately.')
+    parser.add_argument('--sep_lr', default= 0.001, type=float, help = 'The learning rate for separated training.')
+    parser.add_argument('--load_gen', type=str, default=None)
     args = parser.parse_args()
 
     time_str = datetime.datetime.now().isoformat()
@@ -83,6 +86,91 @@ def main():
 
 
     model = HMN(args)
+    if args.load_gen is not None and args.nln == True:
+        param_list = ['decription.embed.weight', 'decription.lstmLabel.weight_ih_l0',
+                      'decription.lstmLabel.weight_hh_l0', 'decription.lstmLabel.bias_ih_l0',
+                      'decription.lstmLabel.bias_hh_l0', 'decription.lstmLabel.weight_ih_l0_reverse',
+                      'decription.lstmLabel.weight_hh_l0_reverse', 'decription.lstmLabel.bias_ih_l0_reverse',
+                      'decription.lstmLabel.bias_hh_l0_reverse', 'decription.label_dynamic_gru.gru.weight_ih_l0',
+                      'decription.label_dynamic_gru.gru.weight_hh_l0', 'decription.label_dynamic_gru.gru.bias_ih_l0',
+                      'decription.label_dynamic_gru.gru.bias_hh_l0',
+                      'decription.label_dynamic_gru.gru.weight_ih_l0_reverse',
+                      'decription.label_dynamic_gru.gru.weight_hh_l0_reverse',
+                      'decription.label_dynamic_gru.gru.bias_ih_l0_reverse',
+                      'decription.label_dynamic_gru.gru.bias_hh_l0_reverse',
+                      'RSANModel_Sub.fact_dynamic_lstm.gru.weight_ih_l0',
+                      'RSANModel_Sub.fact_dynamic_lstm.gru.weight_hh_l0',
+                      'RSANModel_Sub.fact_dynamic_lstm.gru.bias_ih_l0',
+                      'RSANModel_Sub.fact_dynamic_lstm.gru.bias_hh_l0',
+                      'RSANModel_Sub.fact_dynamic_lstm.gru.weight_ih_l0_reverse',
+                      'RSANModel_Sub.fact_dynamic_lstm.gru.weight_hh_l0_reverse',
+                      'RSANModel_Sub.fact_dynamic_lstm.gru.bias_ih_l0_reverse',
+                      'RSANModel_Sub.fact_dynamic_lstm.gru.bias_hh_l0_reverse', 'RSANModel_Sub.embed.weight',
+                      'RSANModel_Sub.lstmInput.weight_ih_l0', 'RSANModel_Sub.lstmInput.weight_hh_l0',
+                      'RSANModel_Sub.lstmInput.bias_ih_l0', 'RSANModel_Sub.lstmInput.bias_hh_l0',
+                      'RSANModel_Sub.lstmInput.weight_ih_l0_reverse', 'RSANModel_Sub.lstmInput.weight_hh_l0_reverse',
+                      'RSANModel_Sub.lstmInput.bias_ih_l0_reverse', 'RSANModel_Sub.lstmInput.bias_hh_l0_reverse',
+                      'RSANModel.norm.a_2', 'RSANModel.norm.b_2', 'RSANModel.final_fc.fc.0.weight',
+                      'RSANModel.final_fc.fc.0.bias', 'RSANModel.final_fc.fc.1.weight', 'RSANModel.final_fc.fc.1.bias',
+                      'RSANModel.final_fc.fc.1.running_mean', 'RSANModel.final_fc.fc.1.running_var',
+                      'RSANModel.final_fc.fc.1.num_batches_tracked', 'RSANModel.final_fc.fc.3.weight',
+                      'RSANModel.final_fc.fc.3.bias', 'coatt1.norm.a_2', 'coatt1.norm.b_2',
+                      'coatt1.final_fc.fc.0.weight', 'coatt1.final_fc.fc.0.bias', 'coatt1.final_fc.fc.1.weight',
+                      'coatt1.final_fc.fc.1.bias', 'coatt1.final_fc.fc.1.running_mean',
+                      'coatt1.final_fc.fc.1.running_var', 'coatt1.final_fc.fc.1.num_batches_tracked',
+                      'coatt1.final_fc.fc.3.weight', 'coatt1.final_fc.fc.3.bias', 'coatt2.norm.a_2', 'coatt2.norm.b_2',
+                      'coatt2.final_fc.fc.0.weight', 'coatt2.final_fc.fc.0.bias', 'coatt2.final_fc.fc.1.weight',
+                      'coatt2.final_fc.fc.1.bias', 'coatt2.final_fc.fc.1.running_mean',
+                      'coatt2.final_fc.fc.1.running_var', 'coatt2.final_fc.fc.1.num_batches_tracked',
+                      'coatt2.final_fc.fc.3.weight', 'coatt2.final_fc.fc.3.bias', 'coatt3.norm.a_2', 'coatt3.norm.b_2',
+                      'coatt3.final_fc.fc.0.weight', 'coatt3.final_fc.fc.0.bias', 'coatt3.final_fc.fc.1.weight',
+                      'coatt3.final_fc.fc.1.bias', 'coatt3.final_fc.fc.1.running_mean',
+                      'coatt3.final_fc.fc.1.running_var', 'coatt3.final_fc.fc.1.num_batches_tracked',
+                      'coatt3.final_fc.fc.3.weight', 'coatt3.final_fc.fc.3.bias', 'coatt4.norm.a_2', 'coatt4.norm.b_2',
+                      'coatt4.final_fc.fc.0.weight', 'coatt4.final_fc.fc.0.bias', 'coatt4.final_fc.fc.1.weight',
+                      'coatt4.final_fc.fc.1.bias', 'coatt4.final_fc.fc.1.running_mean',
+                      'coatt4.final_fc.fc.1.running_var', 'coatt4.final_fc.fc.1.num_batches_tracked',
+                      'coatt4.final_fc.fc.3.weight', 'coatt4.final_fc.fc.3.bias', 'coatt5.norm.a_2', 'coatt5.norm.b_2',
+                      'coatt5.final_fc.fc.0.weight', 'coatt5.final_fc.fc.0.bias', 'coatt5.final_fc.fc.1.weight',
+                      'coatt5.final_fc.fc.1.bias', 'coatt5.final_fc.fc.1.running_mean',
+                      'coatt5.final_fc.fc.1.running_var', 'coatt5.final_fc.fc.1.num_batches_tracked',
+                      'coatt5.final_fc.fc.3.weight', 'coatt5.final_fc.fc.3.bias', 'coatt6.norm.a_2', 'coatt6.norm.b_2',
+                      'coatt6.final_fc.fc.0.weight', 'coatt6.final_fc.fc.0.bias', 'coatt6.final_fc.fc.1.weight',
+                      'coatt6.final_fc.fc.1.bias', 'coatt6.final_fc.fc.1.running_mean',
+                      'coatt6.final_fc.fc.1.running_var', 'coatt6.final_fc.fc.1.num_batches_tracked',
+                      'coatt6.final_fc.fc.3.weight', 'coatt6.final_fc.fc.3.bias', 'coatt7.norm.a_2', 'coatt7.norm.b_2',
+                      'coatt7.final_fc.fc.0.weight', 'coatt7.final_fc.fc.0.bias', 'coatt7.final_fc.fc.1.weight',
+                      'coatt7.final_fc.fc.1.bias', 'coatt7.final_fc.fc.1.running_mean',
+                      'coatt7.final_fc.fc.1.running_var', 'coatt7.final_fc.fc.1.num_batches_tracked',
+                      'coatt7.final_fc.fc.3.weight', 'coatt7.final_fc.fc.3.bias', 'coatt8.norm.a_2', 'coatt8.norm.b_2',
+                      'coatt8.final_fc.fc.0.weight', 'coatt8.final_fc.fc.0.bias', 'coatt8.final_fc.fc.1.weight',
+                      'coatt8.final_fc.fc.1.bias', 'coatt8.final_fc.fc.1.running_mean',
+                      'coatt8.final_fc.fc.1.running_var', 'coatt8.final_fc.fc.1.num_batches_tracked',
+                      'coatt8.final_fc.fc.3.weight', 'coatt8.final_fc.fc.3.bias', 'final_fc.fc.0.weight',
+                      'final_fc.fc.0.bias', 'final_fc.fc.1.weight', 'final_fc.fc.1.bias', 'final_fc.fc.1.running_mean',
+                      'final_fc.fc.1.running_var', 'final_fc.fc.1.num_batches_tracked', 'final_fc.fc.3.weight',
+                      'final_fc.fc.3.bias', 'fc1.fc.0.weight', 'fc1.fc.0.bias', 'fc1.fc.1.weight', 'fc1.fc.1.bias',
+                      'fc1.fc.1.running_mean', 'fc1.fc.1.running_var', 'fc1.fc.1.num_batches_tracked',
+                      'fc1.fc.3.weight', 'fc1.fc.3.bias', 'fc2.fc.0.weight', 'fc2.fc.0.bias', 'fc2.fc.1.weight',
+                      'fc2.fc.1.bias', 'fc2.fc.1.running_mean', 'fc2.fc.1.running_var', 'fc2.fc.1.num_batches_tracked',
+                      'fc2.fc.3.weight', 'fc2.fc.3.bias', 'fc3.fc.0.weight', 'fc3.fc.0.bias', 'fc3.fc.1.weight',
+                      'fc3.fc.1.bias', 'fc3.fc.1.running_mean', 'fc3.fc.1.running_var', 'fc3.fc.1.num_batches_tracked',
+                      'fc3.fc.3.weight', 'fc3.fc.3.bias', 'fc4.fc.0.weight', 'fc4.fc.0.bias', 'fc4.fc.1.weight',
+                      'fc4.fc.1.bias', 'fc4.fc.1.running_mean', 'fc4.fc.1.running_var', 'fc4.fc.1.num_batches_tracked',
+                      'fc4.fc.3.weight', 'fc4.fc.3.bias', 'fc5.fc.0.weight', 'fc5.fc.0.bias', 'fc5.fc.1.weight',
+                      'fc5.fc.1.bias', 'fc5.fc.1.running_mean', 'fc5.fc.1.running_var', 'fc5.fc.1.num_batches_tracked',
+                      'fc5.fc.3.weight', 'fc5.fc.3.bias', 'fc6.fc.0.weight', 'fc6.fc.0.bias', 'fc6.fc.1.weight',
+                      'fc6.fc.1.bias', 'fc6.fc.1.running_mean', 'fc6.fc.1.running_var', 'fc6.fc.1.num_batches_tracked',
+                      'fc6.fc.3.weight', 'fc6.fc.3.bias', 'fc7.fc.0.weight', 'fc7.fc.0.bias', 'fc7.fc.1.weight',
+                      'fc7.fc.1.bias', 'fc7.fc.1.running_mean', 'fc7.fc.1.running_var', 'fc7.fc.1.num_batches_tracked',
+                      'fc7.fc.3.weight', 'fc7.fc.3.bias', 'fc8.fc.0.weight', 'fc8.fc.0.bias', 'fc8.fc.1.weight',
+                      'fc8.fc.1.bias', 'fc8.fc.1.running_mean', 'fc8.fc.1.running_var', 'fc8.fc.1.num_batches_tracked',
+                      'fc8.fc.3.weight', 'fc8.fc.3.bias']
+        print("\nLoading model from {}...".format(args.load_gen))
+        gen = torch.load(args.load_gen)
+        for i in param_list:
+            model.load_state_dict({i:gen[i]}, strict=False)
+
 
     if args.snapshot is not None:
         print("\nLoading model from {}...".format(args.snapshot))

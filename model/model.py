@@ -37,6 +37,7 @@ class HMN(nn.Module):
 
         # NLN
         if args.nln == True:
+            self.p_trans = FCLayer(8, args.embed_dim)
             self.trans = FCLayer(args.embed_dim * int(args.max_len), 183)
             self.NLN_child = TextCNN(183, 183, 12)
             self.NLN_parent = TextCNN(args.embed_dim, 10, 8)
@@ -132,7 +133,7 @@ class HMN(nn.Module):
                         for k,j in enumerate(classify[i]):
                             child_one_hot[j,parent_size[i][0]:parent_size[i][1]] = par[k]
                 child_one_hot = child_one_hot.unsqueeze(1).repeat(1,183,1)
-                logits_parent_num = self.NLN_parent(fact_out)
+                logits_parent_num = self.NLN_parent(fact_out + self.p_trans(logits).unsqueeze(1).repeat(1, int(self.args.max_len), 1))
                 logits_child_num = self.NLN_child(child_one_hot + self.trans(fact_out.reshape(fact_out.size(0),-1)).unsqueeze(1).repeat(1,183,1))
                 return logits, logits_law, logits_child_num, logits_parent_num
             return logits, logits_law
@@ -145,7 +146,7 @@ class HMN(nn.Module):
             output_feature = self.RSANModel(fact_out,inputs_length,label_repeat_out)
             logits = self.final_fc(output_feature)
             if self.args.nln == True:
-                pre, parent_num = F.sigmoid(self.NLN_parent(fact_out)).max(1)
+                pre, parent_num = F.sigmoid(self.NLN_parent(fact_out + self.p_trans(logits).unsqueeze(1).repeat(1, int(self.args.max_len), 1))).max(1)
                 parent_num+=1
                 logits = F.sigmoid(logits)
                 sort_list, sort_ind = logits.sort(dim=1, descending=True)
