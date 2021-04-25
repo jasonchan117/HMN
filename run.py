@@ -76,7 +76,7 @@ def main():
     dev_data_path = args.test_data_path
 
     train_iter, dev_iter, word_num, law_num, parent_num = make_data(train_data_path, dev_data_path,
-                                                          law_path, parent_path, word_path, args.batch_size, args.dev_batch_size, args.num_workers, args.max_len)
+                                                          law_path, parent_path, word_path, args.batch_size, args.dev_batch_size, args.num_workers, args.max_len, args = args)
     args.model_name = 'HMN'
     args.save_dir = "accu_snapshot"
     args.embed_num = word_num
