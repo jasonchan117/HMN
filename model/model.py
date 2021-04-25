@@ -39,8 +39,8 @@ class HMN(nn.Module):
         if args.nln == True:
             self.p_trans = FCLayer(8, args.embed_dim)
             self.trans = FCLayer(args.embed_dim * int(args.max_len), 183)
-            self.NLN_child = TextCNN(183, 183, 12)
-            self.NLN_parent = TextCNN(args.embed_dim, 10, 8)
+            self.NLN_child = TextCNN(183, 183, args.c_num)
+            self.NLN_parent = TextCNN(args.embed_dim, 10, args.p_num)
 
     def forward(self, inputs=None, inputs_length=None, label_inputs=None, all_list=None,
                 label_inputs_length=None, label_des=None, classify=None,flag=None,label1=None):

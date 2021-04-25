@@ -13,7 +13,7 @@ import sys
 import os
 o_path = os.getcwd() # 返回当前工作目录
 sys.path.append(o_path) # 添加自己指定的搜索路径
-def make_data(train_data_path, dev_data_path, law_path, parent_path, word_dict_path, batch_size,dev_batch_size, num_workers, max_len):
+def make_data(train_data_path, dev_data_path, law_path, parent_path, word_dict_path, batch_size,dev_batch_size, num_workers, max_len,args):
     global MAX_LEN
     MAX_LEN= int(max_len)
     words_Helper = data_helper.Vocab(word_dict_path)
@@ -24,9 +24,9 @@ def make_data(train_data_path, dev_data_path, law_path, parent_path, word_dict_p
     law_num = len(law_Helper._word_to_id)
     parent_num = len(parent_Helper._word_to_id)
     train_dataset_helper = LawDataSet(train_data_path, loader=parse_line_from_file, transform=None,
-                                      label1_transform=parent_Helper.transform_raw, label2_transform=law_Helper.transform_raw,flags = 0)
+                                      label1_transform=parent_Helper.transform_raw, label2_transform=law_Helper.transform_raw,flags = 0, args=args)
     dev_dataset_helper = LawDataSet(dev_data_path, loader=parse_line_from_file, transform=None,
-                                    label1_transform=parent_Helper.transform_raw,label2_transform=law_Helper.transform_raw, flags = 0)
+                                    label1_transform=parent_Helper.transform_raw,label2_transform=law_Helper.transform_raw, flags = 0, args=args)
     train_iter = torch.utils.data.DataLoader(train_dataset_helper, batch_size=batch_size,
                                                shuffle=True, num_workers=num_workers, collate_fn=my_collate)
     dev_iter = torch.utils.data.DataLoader(dev_dataset_helper, batch_size=dev_batch_size,
@@ -68,7 +68,8 @@ def my_collate(batch):
 
 class LawDataSet(data.Dataset):
     def __init__(self, root, train=True, transform=None, label1_transform=None, label2_transform=None,
-                 loader=None, pad_len=100, pad_parent_len=20, flags = 0):
+                 loader=None, pad_len=100, pad_parent_len=20, flags = 0, args = None):
+        self.args = args
         self.pad_len = pad_len
         self.pad_parent_len = pad_parent_len
         self.root = root
@@ -108,10 +109,16 @@ class LawDataSet(data.Dataset):
         if self.label2_transform is not None:
             label2 = self.label2_transform(label2)
         # To one-hot
-        law_num_hot = [0.] * 12
-        parent_num_hot = [0.] * 8
-        law_num_hot[law_num-1] = 1.
-        parent_num_hot[parent_num-1] = 1.
+        law_num_hot = [0.] * self.args.c_num
+        parent_num_hot = [0.] * self.args.p_num
+        if law_num > self.args.c_num:
+            law_num_hot[-1] = 1.
+        else:
+            law_num_hot[law_num-1] = 1.
+        if parent_num > self.args.p_num:
+            parent_num_hot[-1] = 1.
+        else:
+            parent_num_hot[parent_num-1] = 1.
         return text, textlens, label1, label2, law,  law_num_hot, parent_num_hot
 
     def __len__(self):

@@ -135,20 +135,35 @@ def train(train_iter, dev_iter, model, args):
             if len(label2_list[7]) > 0:
                 loss2 += torch.nn.functional.binary_cross_entropy_with_logits(logits_list[7], label2_list[7])
 
+            p_sample = [110905, 28075, 9631, 4028, 1423, 394, 96, 29, 8, 1, 1, 1]
+            c_sample = [138516, 15641, 413, 21, 1]
+            p_labels = []
+            c_labels = []
+            for i in range(args.p_num):
+                p_labels += [i] * p_sample[i]
+            for i in range(args.c_num):
+                c_labels += [i] * c_sample[i]
+            #Compute weights
+            p_class_wts = compute_class_weight('balanced', range(args.p_num), p_labels)
+            c_class_wts = compute_class_weight('balanced', range(args.c_num), c_labels)
+
             # Loss of label prediction
+            # Use NLN , train separately
             if args.nln == True and args.sep_nln == True:
-                loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num)
-                loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num)
+                loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num, weight=torch.FloatTensor(c_class_wts))
+                loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num, weight=torch.FloatTensor(p_class_wts))
                 loss_NLN = loss_child_num + loss_parent_num
                 loss_NLN.backward()
                 optimizer_sep.step()
                 loss = loss_NLN
+            # Use NLN, train together
             elif args.nln == True:
-                loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num)
-                loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num)
+                loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num, weight=torch.FloatTensor(c_class_wts))
+                loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num, weight=torch.FloatTensor(p_class_wts))
                 loss = loss1 + loss2 + loss_child_num + loss_parent_num
                 loss.backward()
                 optimizer.step()
+            # Do not use NLN.
             else:
                 loss = loss1 + loss2
                 loss.backward()
