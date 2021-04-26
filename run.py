@@ -54,13 +54,13 @@ def main():
     parser.add_argument('--max_len',  default=10, help='The max len of the text.')
     parser.add_argument('--id', required=True, help='The id for each training.')
     parser.add_argument('--ckpt', type=str, default='/content/drive/MyDrive/Data/HMN/NLN_20_128', help='The path to save the model.')
-    parser.add_argument('--valid_fre', default=1)
+    parser.add_argument('--valid_fre', help='Validation frequency.',default=1)
     parser.add_argument('--p_num', type=int, default=8, help='The max number of parent label.')
     parser.add_argument('--c_num', type=int, default=12, help='The max number of children label.')
 
-    parser.add_argument('--sep_nln', action = 'store_true', help='Train the two modules separately.')
+    parser.add_argument('--sep_nln', action = 'store_true', help='Train the two modules separately. This param should appear with --nln.')
     parser.add_argument('--sep_lr', default= 0.001, type=float, help = 'The learning rate for separated training.')
-    parser.add_argument('--load_gen', type=str, default=None)
+    parser.add_argument('--load_gen', type=str, default=None, help='For separate training, load general model.')
     args = parser.parse_args()
 
     time_str = datetime.datetime.now().isoformat()

@@ -158,7 +158,7 @@ class HMN(nn.Module):
             else:
                 output1 = (F.sigmoid(logits) > 0.5).squeeze()
 
-            predict_label = torch.ByteTensor([0 for i in range(183)])
+            predict_label = torch.FloatTensor([0 for i in range(183)])
             if self.args.cuda:
                 predict_label = predict_label.cuda()
 
