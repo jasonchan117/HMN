@@ -135,17 +135,17 @@ def train(train_iter, dev_iter, model, args):
             if len(label2_list[7]) > 0:
                 loss2 += torch.nn.functional.binary_cross_entropy_with_logits(logits_list[7], label2_list[7])
 
-            c_sample = [110905, 28075, 9631, 4028, 1423, 394, 96, 29, 8, 1, 1, 1]
-            p_sample = [138516, 15641, 413, 21, 1]
-            p_labels = []
-            c_labels = []
-            for i in range(args.p_num):
-                p_labels += [i] * p_sample[i]
-            for i in range(args.c_num):
-                c_labels += [i] * c_sample[i]
-            #Compute weights
-            p_class_wts = compute_class_weight('balanced', range(args.p_num), p_labels)
-            c_class_wts = compute_class_weight('balanced', range(args.c_num), c_labels)
+            # c_sample = [110905, 28075, 9631, 4028, 1423, 394, 96, 29, 8, 1, 1, 1]
+            # p_sample = [138516, 15641, 413, 21, 1]
+            # p_labels = []
+            # c_labels = []
+            # for i in range(args.p_num):
+            #     p_labels += [i] * p_sample[i]
+            # for i in range(args.c_num):
+            #     c_labels += [i] * c_sample[i]
+            # #Compute weights
+            # p_class_wts = compute_class_weight('balanced', range(args.p_num), p_labels)
+            # c_class_wts = compute_class_weight('balanced', range(args.c_num), c_labels)
 
             # Loss of label prediction
             # Use NLN , train separately
