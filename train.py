@@ -150,16 +150,16 @@ def train(train_iter, dev_iter, model, args):
             # Loss of label prediction
             # Use NLN , train separately
             if args.nln == True and args.sep_nln == True:
-                loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num, weight=torch.FloatTensor(c_class_wts).cuda())
-                loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num, weight=torch.FloatTensor(p_class_wts).cuda())
+                loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num)
+                loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num)
                 loss_NLN = loss_child_num + loss_parent_num
                 loss_NLN.backward()
                 optimizer_sep.step()
                 loss = loss_NLN
             # Use NLN, train together
             elif args.nln == True:
-                loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num, weight=torch.FloatTensor(c_class_wts).cuda())
-                loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num, weight=torch.FloatTensor(p_class_wts).cuda())
+                loss_child_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_child_num, law_num)
+                loss_parent_num = torch.nn.functional.binary_cross_entropy_with_logits(logits_parent_num, parent_num)
                 loss = loss1 + loss2 + loss_child_num + loss_parent_num
                 loss.backward()
                 optimizer.step()
