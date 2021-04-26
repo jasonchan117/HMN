@@ -3,6 +3,8 @@ from model.layers.FCLayer import *
 from model.descriptions.description import LawDscription
 from model.model_utils import LayerNorm
 from model.layers.DynamicGRU import DynamicGRU
+from model.layers.DynamicRNN import DynamicRNN
+from model.layers.DynamicLSTM import DynamicLSTM
 from model.layers.TextCNN import TextCNN
 def kmax_pooling(x, dim, k):
     index = x.topk(k, dim=dim)[1].sort(dim=dim)[0]
@@ -260,11 +262,27 @@ class RSANModel_Sub(nn.Module):
         # lstm args
         self.lstm_hidden_dim = args.hidden_size
         self.num_layers = 1
-        self.fact_dynamic_lstm = DynamicGRU(input_dim=D,
+        if self.args.encoder == 'gru':
+            self.fact_dynamic_lstm = DynamicGRU(input_dim=D,
                                              output_dim=self.lstm_hidden_dim,
                                              num_layers=self.num_layers,
                                              bidirectional=True,
                                              batch_first=True)
+        if self.args.encoder == 'rnn':
+            self.fact_dynamic_lstm = DynamicRNN(input_dim=D,
+                                             output_dim=self.lstm_hidden_dim,
+                                             num_layers=self.num_layers,
+                                             bidirectional=True,
+                                             batch_first=True)                      
+        if self.args.encoder == 'lstm':
+            self.fact_dynamic_lstm = DynamicLSTM(input_dim=D,
+                                             output_dim=self.lstm_hidden_dim,
+                                             num_layers=self.num_layers,
+                                             bidirectional=True,
+                                             batch_first=True)
+        if self.args.encoder == 'transformer':
+            self.fact_dynamic_lstm = nn.TransformerEncoderLayer(d_model=self.lstm_hidden_dim, nhead=8)
+        
         # attention is all you need args
         self.num_headers = 8
         self.rsa_layers = 3

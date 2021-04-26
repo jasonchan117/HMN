@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from model.layers.DynamicGRU import DynamicGRU
+from model.layers.DynamicLSTM import DynamicLSTM
+from model.layers.DynamicRNN import DynamicRNN
 
 class LawDscription(nn.Module):
     def __init__(self, args):
@@ -14,10 +16,23 @@ class LawDscription(nn.Module):
         self.embed = nn.Embedding(V, D, padding_idx=0)
         self.lstmLabel = nn.LSTM(D, args.hidden_size, bidirectional=True, batch_first=True)
 
-        self.label_dynamic_gru = DynamicGRU(input_dim=D,
-                                         output_dim=self.lstm_hidden_dim,
-                                         bidirectional=True,
-                                         batch_first=True)
+        if self.args.encoder == 'gru':
+            self.label_dynamic_gru = DynamicGRU(input_dim=D,
+                                             output_dim=self.lstm_hidden_dim,
+                                             bidirectional=True,
+                                             batch_first=True)
+        if self.args.encoder == 'rnn':
+            self.label_dynamic_gru = DynamicRNN(input_dim=D,
+                                             output_dim=self.lstm_hidden_dim,
+                                             bidirectional=True,
+                                             batch_first=True)                      
+        if self.args.encoder == 'lstm':
+            self.label_dynamic_gru = DynamicLSTM(input_dim=D,
+                                             output_dim=self.lstm_hidden_dim,
+                                             bidirectional=True,
+                                             batch_first=True)
+        if self.args.encoder == 'transformer':
+            self.label_dynamic_gru = nn.TransformerEncoderLayer(d_model=self.lstm_hidden_dim, nhead=8)
 
 
     def cal(self,input_list, last_hidden):
@@ -61,8 +76,15 @@ class LawDscription(nn.Module):
         :return:all_list
         """
         x = self.embed(law_text)
-        label_lstm_out, (label_ht, label_ct) = self.label_dynamic_gru(x, law_length)
-        output = label_lstm_out[:, :, :self.lstm_hidden_dim] + label_lstm_out[:, :, self.lstm_hidden_dim:]
+        if self.args.encoder == 'transformer':
+            label_lstm_out = self.label_dynamic_gru(x)
+            output = label_lstm_out
+        if self.args.encoder == 'rnn':
+            label_lstm_out, label_ht = self.label_dynamic_gru(x, law_length)
+            output = label_lstm_out[:, :, :self.lstm_hidden_dim] + label_lstm_out[:, :, self.lstm_hidden_dim:]
+        if self.args.encoder == ('gru' or 'lstm'):
+            label_lstm_out, (label_ht, label_ct) = self.label_dynamic_gru(x, law_length)
+            output = label_lstm_out[:, :, :self.lstm_hidden_dim] + label_lstm_out[:, :, self.lstm_hidden_dim:]
 
         last_hideen = []
         for i,length in enumerate(law_length):

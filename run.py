@@ -58,9 +58,11 @@ def main():
     parser.add_argument('--p_num', type=int, default=8, help='The max number of parent label.')
     parser.add_argument('--c_num', type=int, default=12, help='The max number of children label.')
 
+    parser.add_argument('--load_gen', type=str, default=None, help='For separate training, load general model.')
     parser.add_argument('--sep_nln', action = 'store_true', help='Train the two modules separately. This param should appear with --nln.')
     parser.add_argument('--sep_lr', default= 0.001, type=float, help = 'The learning rate for separated training.')
-    parser.add_argument('--load_gen', type=str, default=None, help='For separate training, load general model.')
+    parser.add_argument('--encoder', type=str, default='gru', help='The choice of encoder, choose from lstm, gru and rnn')
+
     args = parser.parse_args()
 
     time_str = datetime.datetime.now().isoformat()
