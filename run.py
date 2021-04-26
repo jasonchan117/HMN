@@ -62,7 +62,7 @@ def main():
     parser.add_argument('--sep_lr', default= 0.001, type=float, help = 'The learning rate for separated training.')
     parser.add_argument('--load_gen', type=str, default=None)
     
-    parser.add_argument('--encoder', type=str, default='gru', help='The choice of encoder')
+    parser.add_argument('--encoder', type=str, default='gru', help='The choice of encoder, choose from lstm, gru and rnn')
 
     args = parser.parse_args()
 
