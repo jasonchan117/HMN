@@ -61,6 +61,9 @@ def main():
     parser.add_argument('--sep_nln', action = 'store_true', help='Train the two modules separately.')
     parser.add_argument('--sep_lr', default= 0.001, type=float, help = 'The learning rate for separated training.')
     parser.add_argument('--load_gen', type=str, default=None)
+    
+    parser.add_argument('--encoder', type=str, default='gru', help='The choice of encoder')
+
     args = parser.parse_args()
 
     time_str = datetime.datetime.now().isoformat()
