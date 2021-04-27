@@ -137,7 +137,7 @@ class HMN(nn.Module):
                 child_one_hot = child_one_hot.unsqueeze(1).repeat(1,183,1)
                 logits_parent_num = self.NLN_parent(torch.cat([fact_out.unsqueeze(1), self.p_trans(logits).unsqueeze(1).repeat(1, int(self.args.max_len), 1).unsqueeze(1)], dim = 1))
                 logits_child_num = self.NLN_child(torch.cat([child_one_hot.unsqueeze(1), self.trans(fact_out.reshape(fact_out.size(0),-1)).unsqueeze(1).repeat(1,183,1).unsqueeze(1)], dim = 1 ))
-                return logits, logits_law, F.softmax(logits_child_num), F.softmax(logits_parent_num)
+                return logits, logits_law, logits_child_num, logits_parent_num
             return logits, logits_law
 
         if flag is not None and flag == 1:
