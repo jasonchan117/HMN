@@ -135,9 +135,9 @@ class HMN(nn.Module):
                         for k,j in enumerate(classify[i]):
                             child_one_hot[j,parent_size[i][0]:parent_size[i][1]] = par[k]
                 child_one_hot = child_one_hot.unsqueeze(1).repeat(1,183,1)
-                logits_parent_num = self.NLN_parent(fact_out + self.p_trans(logits).unsqueeze(1).repeat(1, int(self.args.max_len), 1))
-                logits_child_num = self.NLN_child(child_one_hot + self.trans(fact_out.reshape(fact_out.size(0),-1)).unsqueeze(1).repeat(1,183,1))
-                return logits, logits_law, logits_child_num, logits_parent_num
+                logits_parent_num = self.NLN_parent(torch.cat([fact_out.unsqueeze(1), self.p_trans(logits).unsqueeze(1).repeat(1, int(self.args.max_len), 1).unsqueeze(1)], dim = 1))
+                logits_child_num = self.NLN_child(torch.cat([child_one_hot.unsqueeze(1), self.trans(fact_out.reshape(fact_out.size(0),-1)).unsqueeze(1).repeat(1,183,1).unsqueeze(1)], dim = 1 ))
+                return logits, logits_law, F.softmax(logits_child_num), F.softmax(logits_parent_num)
             return logits, logits_law
 
         if flag is not None and flag == 1:
@@ -148,9 +148,9 @@ class HMN(nn.Module):
             output_feature = self.RSANModel(fact_out,inputs_length,label_repeat_out)
             logits = self.final_fc(output_feature)
             if self.args.nln == True:
-                pre, parent_num = F.sigmoid(self.NLN_parent(fact_out + self.p_trans(logits).unsqueeze(1).repeat(1, int(self.args.max_len), 1))).max(1)
+                pre, parent_num = F.softmax(self.NLN_parent(torch.cat([fact_out.unsqueeze(1), self.p_trans(logits).unsqueeze(1).repeat(1, int(self.args.max_len), 1).unsqueeze(1)], dim =1))).max(1)
                 parent_num+=1
-                logits = F.sigmoid(logits)
+
                 sort_list, sort_ind = logits.sort(dim=1, descending=True)
                 for i, cont in enumerate(logits):
                     logits[i, (sort_ind[i, 0:parent_num[i]]).long()] = True
@@ -234,8 +234,8 @@ class HMN(nn.Module):
                             logits2 = F.sigmoid(output2).squeeze()
                         predict_label[parent_size[index][0]:parent_size[index][1]] = logits2
             if self.args.nln == True:
-                output_num = self.NLN_child(predict_label.unsqueeze(0).unsqueeze(0).float().repeat(1,183,1) + self.trans(fact_out.unsqueeze(0).reshape(fact_out.size(0),-1)).unsqueeze(1).repeat(1,183,1))
-                pre, output_num = F.sigmoid(output_num).max(1)
+                output_num = self.NLN_child(torch.cat([predict_label.unsqueeze(0).unsqueeze(0).float().repeat(1,183,1).unsqueeze(1), self.trans(fact_out.unsqueeze(0).reshape(fact_out.size(0),-1)).unsqueeze(1).repeat(1,183,1).unsqueeze(1)], dim=1))
+                pre, output_num = F.softmax(output_num).max(1)
                 output_num += 1
                 sort_list, sort_ind = F.sigmoid(predict_label).sort( descending=True)
                 predict_label[(sort_ind[ 0:output_num.squeeze(0)]).long()] = True

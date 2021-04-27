@@ -8,7 +8,7 @@ class TextCNN(nn.Module):
         super(TextCNN, self).__init__()
         Dim = word_embedding_dimension
         Cla = label_num
-        Ci = 1
+        Ci = 2
         Knum = 2
         Ks = [2, 3, 4]
         self.convs = nn.ModuleList([nn.Conv2d(Ci, Knum, (K, Dim)) for K in Ks])
