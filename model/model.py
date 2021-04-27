@@ -127,14 +127,13 @@ class HMN(nn.Module):
             # Number predict for child label
             if self.args.nln == True:
                 parent_size = [[0, 17], [17, 71], [71, 91], [91, 104], [104, 159], [159, 162], [162, 176], [176, 183]]
-                child_one_hot = torch.zeros([inputs.size(0), 183]).fill_(-100.)
+                child_one_hot = torch.zeros([inputs.size(0), 183])
                 if self.args.cuda == True:
                     child_one_hot = child_one_hot.cuda()
                 for i, par in enumerate(logits_law):
                     if len(evidence_len[i]) > 0:
                         for k,j in enumerate(classify[i]):
                             child_one_hot[j,parent_size[i][0]:parent_size[i][1]] = par[k]
-                child_one_hot = F.softmax(child_one_hot)
                 #child_one_hot = child_one_hot.unsqueeze(1).repeat(1,183,1)
                 logits_parent_num = self.NLN_parent(torch.cat([fact_out.unsqueeze(1), self.p_trans(logits).unsqueeze(1).repeat(1, int(self.args.max_len), 1).unsqueeze(1)], dim = 1))
                 logits_child_num = self.NLN_child(torch.cat([fact_out.unsqueeze(1), self.trans(child_one_hot).unsqueeze(1).repeat(1, int(self.args.max_len), 1).unsqueeze(1)], dim=1))
@@ -239,7 +238,7 @@ class HMN(nn.Module):
                         predict_label[parent_size[index][0]:parent_size[index][1]] = logits2
             if self.args.nln == True:
                 #output_num = self.NLN_child(torch.cat([predict_label.unsqueeze(0).unsqueeze(0).float().repeat(1,183,1).unsqueeze(1), self.trans(fact_out.unsqueeze(0).reshape(fact_out.size(0),-1)).unsqueeze(1).repeat(1,183,1).unsqueeze(1)], dim=1))
-                output_num = self.NLN_child(torch.cat([fact_out.unsqueeze(0),  self.trans(F.softmax(predict_label).unsqueeze(0)).unsqueeze(1).repeat(1, int(self.args.max_len), 1).unsqueeze(1)], dim=1))
+                output_num = self.NLN_child(torch.cat([fact_out.unsqueeze(0),  self.trans(predict_label.unsqueeze(0)).unsqueeze(1).repeat(1, int(self.args.max_len), 1).unsqueeze(1)], dim=1))
                 pre, output_num = F.softmax(output_num).max(1)
                 output_num += 1
                 sort_list, sort_ind = F.sigmoid(predict_label).sort( descending=True)

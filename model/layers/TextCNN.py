@@ -13,8 +13,10 @@ class TextCNN(nn.Module):
         Ks = [4, 3, 2]
         self.convs = nn.ModuleList([nn.Conv2d(Ci, Knum, (K, Dim)) for K in Ks])
         self.dropout = nn.Dropout(0.5)
-        self.fc = nn.Linear(len(Ks) * Knum, Cla)
-
+        self.fc = nn.Linear(len(Ks) * Knum, 512)
+        self.fc1 = nn.Linear(512, 256)
+        self.fc2 = nn.Linear(256, 128)
+        self.fc3 = nn.Linear(128, Cla)
     def forward(self, x):
 
         x = [F.relu(conv(x)).squeeze(3) for conv in self.convs]
@@ -22,4 +24,7 @@ class TextCNN(nn.Module):
         x = torch.cat(x, 1)
         x = self.dropout(x)
         logit = self.fc(x)
+        logit = self.fc1(logit)
+        logit = self.fc2(logit)
+        logit = self.fc3(logit)
         return logit
