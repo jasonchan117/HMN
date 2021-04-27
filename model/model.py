@@ -40,8 +40,8 @@ class HMN(nn.Module):
         # NLN
         if args.nln == True:
             self.p_trans = FCLayer(8, args.embed_dim)
-            self.trans = FCLayer(args.embed_dim * int(args.max_len), 183)
-            self.NLN_child = TextCNN(183, 183, args.c_num)
+            self.trans = FCLayer(183, args.embed_dim)
+            self.NLN_child = TextCNN(args.embed_dim, 183, args.c_num)
             self.NLN_parent = TextCNN(args.embed_dim, 10, args.p_num)
 
     def forward(self, inputs=None, inputs_length=None, label_inputs=None, all_list=None,
@@ -134,9 +134,12 @@ class HMN(nn.Module):
                     if len(evidence_len[i]) > 0:
                         for k,j in enumerate(classify[i]):
                             child_one_hot[j,parent_size[i][0]:parent_size[i][1]] = par[k]
-                child_one_hot = child_one_hot.unsqueeze(1).repeat(1,183,1)
+                #child_one_hot = child_one_hot.unsqueeze(1).repeat(1,183,1)
                 logits_parent_num = self.NLN_parent(torch.cat([fact_out.unsqueeze(1), self.p_trans(logits).unsqueeze(1).repeat(1, int(self.args.max_len), 1).unsqueeze(1)], dim = 1))
-                logits_child_num = self.NLN_child(torch.cat([child_one_hot.unsqueeze(1), self.trans(fact_out.reshape(fact_out.size(0),-1)).unsqueeze(1).repeat(1,183,1).unsqueeze(1)], dim = 1 ))
+                logits_child_num = self.NLN_child(torch.cat([fact_out.unsqueeze(1), self.trans(child_one_hot).unsqueeze(1).repeat(1, int(self.args.max_len), 1).unsqueeze(1)], dim=1))
+
+                #logits_child_num = self.NLN_child(torch.cat([child_one_hot.unsqueeze(1), self.trans(fact_out.reshape(fact_out.size(0),-1)).unsqueeze(1).repeat(1,183,1).unsqueeze(1)], dim = 1 ))
+
                 return logits, logits_law, logits_child_num, logits_parent_num
             return logits, logits_law
 
@@ -234,7 +237,8 @@ class HMN(nn.Module):
                             logits2 = F.sigmoid(output2).squeeze()
                         predict_label[parent_size[index][0]:parent_size[index][1]] = logits2
             if self.args.nln == True:
-                output_num = self.NLN_child(torch.cat([predict_label.unsqueeze(0).unsqueeze(0).float().repeat(1,183,1).unsqueeze(1), self.trans(fact_out.unsqueeze(0).reshape(fact_out.size(0),-1)).unsqueeze(1).repeat(1,183,1).unsqueeze(1)], dim=1))
+                #output_num = self.NLN_child(torch.cat([predict_label.unsqueeze(0).unsqueeze(0).float().repeat(1,183,1).unsqueeze(1), self.trans(fact_out.unsqueeze(0).reshape(fact_out.size(0),-1)).unsqueeze(1).repeat(1,183,1).unsqueeze(1)], dim=1))
+                output_num = self.NLN_child(torch.cat([fact_out.unsqueeze(0).unsqueeze(1),  self.trans(predict_label.unsqueeze(0)).unsqueeze(1).repeat(1, int(self.args.max_len), 1).unsqueeze(1)], dim=1))
                 pre, output_num = F.softmax(output_num).max(1)
                 output_num += 1
                 sort_list, sort_ind = F.sigmoid(predict_label).sort( descending=True)
