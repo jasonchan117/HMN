@@ -268,19 +268,19 @@ class RSANModel_Sub(nn.Module):
                                              num_layers=self.num_layers,
                                              bidirectional=True,
                                              batch_first=True)
-        if self.args.encoder == 'rnn':
+        elif self.args.encoder == 'rnn':
             self.fact_dynamic_lstm = DynamicRNN(input_dim=D,
                                              output_dim=self.lstm_hidden_dim,
                                              num_layers=self.num_layers,
                                              bidirectional=True,
                                              batch_first=True)                      
-        if self.args.encoder == 'lstm':
+        elif self.args.encoder == 'lstm':
             self.fact_dynamic_lstm = DynamicLSTM(input_dim=D,
                                              output_dim=self.lstm_hidden_dim,
                                              num_layers=self.num_layers,
                                              bidirectional=True,
                                              batch_first=True)
-        if self.args.encoder == 'transformer':
+        elif self.args.encoder == 'transformer':
             self.fact_dynamic_lstm = nn.TransformerEncoderLayer(d_model=self.lstm_hidden_dim, nhead=8)
         
         # attention is all you need args
