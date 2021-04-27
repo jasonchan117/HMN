@@ -10,7 +10,7 @@ class TextCNN(nn.Module):
         Cla = label_num
         Ci = 2
         Knum = 2
-        Ks = [2, 3, 4]
+        Ks = [4, 3, 2]
         self.convs = nn.ModuleList([nn.Conv2d(Ci, Knum, (K, Dim)) for K in Ks])
         self.dropout = nn.Dropout(0.5)
         self.fc = nn.Linear(len(Ks) * Knum, Cla)
