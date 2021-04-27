@@ -16,7 +16,7 @@ class TextCNN(nn.Module):
         self.fc = nn.Linear(len(Ks) * Knum, Cla)
 
     def forward(self, x):
-        x = x.unsqueeze(1)
+
         x = [F.relu(conv(x)).squeeze(3) for conv in self.convs]
         x = [F.max_pool1d(line, line.size(2)).squeeze(2) for line in x]
         x = torch.cat(x, 1)
