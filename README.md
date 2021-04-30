@@ -12,10 +12,8 @@ Source code for SIGIR 2019 paper "Hierarchical Matching Network for Crime Classi
 ### Dataset
 We conduct our empirical experiments on two real-world legal datasets:
 * **CAIL 2018**: contains criminal cases published by the Supreme People’s Court. Each case consists of two parts, i.e., fact description and corresponding judgment result (including laws, articles, and charges.
-* **DPAM**: comprises 40,256 criminal cases. These data are crawled from China Judgment Online2 and span from Jan.2016 to June. 2016.
 
 <!-- (https://arxiv.org/pdf/1807.02478.pdf) -->
-<!-- (https://drive.google.com/open?id=1TCcTzte2cQ2wxWw-kXsZdUApCsNejdn8) -->
 
 ##### Example of Dataset
 ```json
@@ -39,36 +37,6 @@ Reproducing the results reported in our paper, please run the code as follows:
 python run.py
 ```
 
-### Citation
-For more information, please refer to our paper. If our work is helpful to you, please kindly cite our paper as:
-```
-@inproceedings{DBLP:conf/sigir/WangFNYZG19,
-  author    = {Pengfei Wang and
-               Yu Fan and
-               Shuzi Niu and
-               Ze Yang and
-               Yongfeng Zhang and
-               Jiafeng Guo},
-  editor    = {Benjamin Piwowarski and
-               Max Chevalier and
-               {\'{E}}ric Gaussier and
-               Yoelle Maarek and
-               Jian{-}Yun Nie and
-               Falk Scholer},
-  title     = {Hierarchical Matching Network for Crime Classification},
-  booktitle = {Proceedings of the 42nd International {ACM} {SIGIR} Conference on
-               Research and Development in Information Retrieval, {SIGIR} 2019, Paris,
-               France, July 21-25, 2019},
-  pages     = {325--334},
-  publisher = {{ACM}},
-  year      = {2019},
-  url       = {https://doi.org/10.1145/3331184.3331223},
-  doi       = {10.1145/3331184.3331223},
-  timestamp = {Sun, 21 Jul 2019 17:52:47 +0200},
-  biburl    = {https://dblp.org/rec/conf/sigir/WangFNYZG19.bib},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
-}  
-```
 
 ### Reference
 * [CAIL2018: A Large-Scale Legal Dataset for Judgment Prediction](https://arxiv.org/pdf/1807.02478.pdf)
