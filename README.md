@@ -10,7 +10,7 @@ Source code for SIGIR 2019 paper "Hierarchical Matching Network for Crime Classi
 * torchtext==0.3.1
 
 ### Dataset
-We conduct our empirical experiments on two real-world legal datasets:
+We conduct our empirical experiments on real-world legal datasets:
 * **CAIL 2018**: contains criminal cases published by the Supreme People’s Court. Each case consists of two parts, i.e., fact description and corresponding judgment result (including laws, articles, and charges.
 
 <!-- (https://arxiv.org/pdf/1807.02478.pdf) -->
